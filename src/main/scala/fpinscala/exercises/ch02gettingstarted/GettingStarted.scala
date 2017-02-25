@@ -1,8 +1,8 @@
 package fpinscala.exercises.ch02gettingstarted
 
 /**
-  * Created by hjmao on 25/02/2017.
-  */
+ * Created by hjmao on 25/02/2017.
+ */
 
 // A comment!
 /* Another comment */
@@ -16,7 +16,9 @@ object MyModule {
   }
 
   def main(args: Array[String]): Unit =
+    // scalastyle:off println
     println(formatAbs(-42))
+    // scalastyle:on println
 
   // A definition of factorial, using a local, tail recursive function
   def factorial(n: Int): Int = {
@@ -66,8 +68,10 @@ object FormatAbsAndFactorial {
   // Now we can use our general `formatResult` function
   // with both `abs` and `factorial`
   def main(args: Array[String]): Unit = {
+    // scalastyle:off println
     println(formatResult("absolute value", -42, abs))
     println(formatResult("factorial", 7, factorial))
+    // scalastyle:on println
   }
 }
 
@@ -77,8 +81,12 @@ object TestFib {
 
   // test implementation of `fib`
   def main(args: Array[String]): Unit = {
+    // scalastyle:off println
     println("Expected: 0, 1, 1, 2, 3, 5, 8")
-    println("Actual:   %d, %d, %d, %d, %d, %d, %d".format(fib(0), fib(1), fib(2), fib(3), fib(4), fib(5), fib(6)))
+    println("Actual:   %d, %d, %d, %d, %d, %d, %d".format(
+      fib(0), fib(1), fib(2), fib(3), fib(4), fib(5), fib(6))
+    )
+    // scalastyle:on println
   }
 }
 
@@ -91,6 +99,7 @@ object AnonymousFunctions {
 
   // Some examples of anonymous functions:
   def main(args: Array[String]): Unit = {
+    // scalastyle:off println
     println(formatResult("absolute value", -42, abs))
     println(formatResult("factorial", 7, factorial))
     println(formatResult("increment", 7, (x: Int) => x + 1))
@@ -100,6 +109,7 @@ object AnonymousFunctions {
     println(formatResult("increment5", 7, x => {
       val r = x + 1; r
     }))
+    // scalastyle:on println
   }
 }
 

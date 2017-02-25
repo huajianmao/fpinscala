@@ -1,23 +1,27 @@
 package fpinscala.exercises.ch03datastructures
 
 /**
-  * Created by hjmao on 25/02/2017.
-  */
+ * Created by hjmao on 25/02/2017.
+ */
 
 sealed trait List[+A] // `List` data type, parameterized on a type, `A`
 
 case object Nil extends List[Nothing] // A `List` data constructor representing the empty list
 
 /**
-  * Another data constructor, representing nonempty lists.
-  * Note that `tail` is another `List[A]`, which may be `Nil` or another `Cons`.
-  */
+ * Another data constructor, representing nonempty lists.
+ * Note that `tail` is another `List[A]`, which may be `Nil` or another `Cons`.
+ */
 case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
-object List { // `List` companion object. Contains functions for creating and working with lists.
-  def sum(ints: List[Int]): Int = ints match { // A function that uses pattern matching to add up a list of integers
-    case Nil => 0 // The sum of the empty list is 0.
-    case Cons(x, xs) => x + sum(xs) // The sum of a list starting with `x` is `x` plus the sum of the rest of the list.
+/**
+ * `List` companion object.
+ * Contains functions for creating and working with lists.
+ */
+object List {
+  def sum(ints: List[Int]): Int = ints match {
+    case Nil => 0
+    case Cons(x, xs) => x + sum(xs)
   }
 
   def product(ds: List[Double]): Double = ds match {
@@ -78,25 +82,23 @@ object List { // `List` companion object. Contains functions for creating and wo
   // Exercise 3.5
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
     case Nil => Nil
-    case Cons(x, xs) => {
+    case Cons(x, xs) =>
       if (f(x)) { dropWhile(xs, f) }
       else { Cons(x, dropWhile(xs, f)) }
-    }
   }
   def dropWhile1[A](l: List[A], f: A => Boolean): List[A] = {
     def loop(l: List[A], f: A => Boolean, acc: List[A]): List[A] = l match {
       case Nil => acc
-      case Cons(x, xs) => {
+      case Cons(x, xs) =>
         if (f(x)) { loop(xs, f, acc) }
         else { loop(xs, f, Cons(x, acc)) }
-      }
     }
     def reverse(l: List[A]): List[A] = loop(l, (x: A) => true, Nil)
     reverse(loop(l, f, Nil))
   }
 
   // Exercise 3.6
-  def init[A](l: List[A]): List[A] = l match{
+  def init[A](l: List[A]): List[A] = l match {
     case Nil => Nil
     case Cons(x, Nil) => Nil
     case Cons(x, tail) => Cons(x, init(tail))
@@ -109,7 +111,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   // Exercise 3.8
   // Answer: It will keep the List.
   //         exercise38(List(1, 2, 3) will return List(1, 2, 3)
-  def exercise38[A](ns: List[A]): List[A] = foldRight(ns, Nil:List[A])(Cons(_, _))
+  def exercise38[A](ns: List[A]): List[A] = foldRight(ns, Nil: List[A])(Cons(_, _))
 
   // Exercise 3.9
   def length[A](l: List[A]): Int = foldRight(l, 0)((x, y) => 1 + y)
@@ -118,9 +120,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   def foldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B = {
     def loop(l: List[A], z: B, f: (B, A) => B, acc: B): B = l match {
       case Nil => acc
-      case Cons(x, xs) => {
-        loop(xs, z, f, f(acc, x))
-      }
+      case Cons(x, xs) => loop(xs, z, f, f(acc, x))
     }
 
     loop(l, z, f, z)
@@ -133,11 +133,4 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   // Exercise 3.12
   def reverse[A](l: List[A]): List[A] = foldLeft(l, Nil: List[A])((xs, x) => Cons(x, xs))
-
-  // Exercise 3.13
-  // TODO: HERE --------
-  def foldLeftViaFoldRight[A, B](l: List[A], z: B)(f: (B, A) => B): B = ???
-  def foldRightViaFoldLeft[A, B](l: List[A], z: B)(f: (A, B) => B): B = ???
-
-  def map[A, B](l: List[A])(f: A => B): List[B] = ???
 }
