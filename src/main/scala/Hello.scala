@@ -1,5 +1,3 @@
-package cn.hjmao.fp.scala.example
-
 object Hello extends App {
   val p = Person("Alvin Alexander")
   println("Hello from " + p.name)

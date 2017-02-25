@@ -1,5 +1,3 @@
-package cn.hjmao.fp.scala.example
-
 import org.scalatest.FunSuite
  
 class HelloSuite extends FunSuite {
