@@ -27,9 +27,11 @@ object List { // `List` companion object. Contains functions for creating and wo
   }
 
   def apply[A](as: A*): List[A] = // Variadic function syntax
-    if (as.isEmpty) Nil
-    else Cons(as.head, apply(as.tail: _*))
+    if (as.isEmpty) { Nil }
+    else { Cons(as.head, apply(as.tail: _*)) }
 
+  // Exercise 3.1
+  // Answer: 3
   val x = List(1, 2, 3, 4, 5) match {
     case Cons(x, Cons(2, Cons(4, _))) => x
     case Nil => 42
@@ -50,26 +52,92 @@ object List { // `List` companion object. Contains functions for creating and wo
       case Cons(x, xs) => f(x, foldRight(xs, z)(f))
     }
 
-  def sum2(ns: List[Int]) =
-    foldRight(ns, 0)((x, y) => x + y)
+  // Exercise 3.2
+  def tail[A](l: List[A]): List[A] = l match {
+    case Nil => Nil
+    case Cons(x, xs) => xs
+  }
 
-  def product2(ns: List[Double]) =
-    foldRight(ns, 1.0)(_ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
+  // Exercise 3.3
+  def setHead[A](l: List[A], h: A): List[A] = l match {
+    case Nil => Nil
+    case Cons(x, xs) => Cons(h, xs)
+  }
 
+  // Exercise 3.4
+  def drop[A](l: List[A], n: Int): List[A] = {
+    if (n == 0) { l }
+    else {
+      l match {
+        case Nil => Nil
+        case Cons(x, xs) => drop(xs, n-1)
+      }
+    }
+  }
 
-  def tail[A](l: List[A]): List[A] = ???
+  // Exercise 3.5
+  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
+    case Nil => Nil
+    case Cons(x, xs) => {
+      if (f(x)) { dropWhile(xs, f) }
+      else { Cons(x, dropWhile(xs, f)) }
+    }
+  }
+  def dropWhile1[A](l: List[A], f: A => Boolean): List[A] = {
+    def loop(l: List[A], f: A => Boolean, acc: List[A]): List[A] = l match {
+      case Nil => acc
+      case Cons(x, xs) => {
+        if (f(x)) { loop(xs, f, acc) }
+        else { loop(xs, f, Cons(x, acc)) }
+      }
+    }
+    def reverse(l: List[A]): List[A] = loop(l, (x: A) => true, Nil)
+    reverse(loop(l, f, Nil))
+  }
 
-  def setHead[A](l: List[A], h: A): List[A] = ???
+  // Exercise 3.6
+  def init[A](l: List[A]): List[A] = l match{
+    case Nil => Nil
+    case Cons(x, Nil) => Nil
+    case Cons(x, tail) => Cons(x, init(tail))
+  }
 
-  def drop[A](l: List[A], n: Int): List[A] = ???
+  // Exercise 3.7
+  def product2(ns: List[Double]): Double = foldRight(ns, 1.0)(_ * _)
+  def sum2(ns: List[Int]): Int = foldRight(ns, 0)(_ + _)
 
-  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = ???
+  // Exercise 3.8
+  // Answer: It will keep the List.
+  //         exercise38(List(1, 2, 3) will return List(1, 2, 3)
+  def exercise38[A](ns: List[A]): List[A] = foldRight(ns, Nil:List[A])(Cons(_, _))
 
-  def init[A](l: List[A]): List[A] = ???
+  // Exercise 3.9
+  def length[A](l: List[A]): Int = foldRight(l, 0)((x, y) => 1 + y)
 
-  def length[A](l: List[A]): Int = ???
+  // Exercise 3.10
+  def foldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B = {
+    def loop(l: List[A], z: B, f: (B, A) => B, acc: B): B = l match {
+      case Nil => acc
+      case Cons(x, xs) => {
+        loop(xs, z, f, f(acc, x))
+      }
+    }
 
-  def foldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B = ???
+    loop(l, z, f, z)
+  }
+
+  // Exercise 3.11
+  def sum3(ns: List[Int]): Int = foldLeft(ns, 0)(_ + _)
+  def product3(ns: List[Double]): Double = foldLeft(ns, 1.0)(_ * _)
+  def length2[A](l: List[A]): Int = foldLeft(l, 0)((x, y) => x + 1)
+
+  // Exercise 3.12
+  def reverse[A](l: List[A]): List[A] = foldLeft(l, Nil: List[A])((xs, x) => Cons(x, xs))
+
+  // Exercise 3.13
+  // TODO: HERE --------
+  def foldLeftViaFoldRight[A, B](l: List[A], z: B)(f: (B, A) => B): B = ???
+  def foldRightViaFoldLeft[A, B](l: List[A], z: B)(f: (A, B) => B): B = ???
 
   def map[A, B](l: List[A])(f: A => B): List[B] = ???
 }

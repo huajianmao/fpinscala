@@ -8,9 +8,7 @@ package fpinscala.exercises.ch02gettingstarted
 /* Another comment */
 /** A documentation comment */
 object MyModule {
-  def abs(n: Int): Int =
-    if (n < 0) -n
-    else n
+  def abs(n: Int): Int = if (n < 0) -n else n
 
   private def formatAbs(x: Int) = {
     val msg = "The absolute value of %d is %d"
@@ -23,9 +21,7 @@ object MyModule {
   // A definition of factorial, using a local, tail recursive function
   def factorial(n: Int): Int = {
     @annotation.tailrec
-    def go(n: Int, acc: Int): Int =
-      if (n <= 0) acc
-      else go(n - 1, n * acc)
+    def go(n: Int, acc: Int): Int = if (n <= 0) acc else go(n - 1, n * acc)
 
     go(n, 1)
   }
@@ -43,8 +39,7 @@ object MyModule {
   // Exercise 1: Write a function to compute the nth fibonacci number
   def fib(n: Int): Int = {
     def loop(n: Int, acc1: Int, acc2: Int): Int = {
-      if (n < 2) acc1
-      else loop(n-1, acc2, acc1 + acc2)
+      if (n < 2) acc1 else loop(n-1, acc2, acc1 + acc2)
     }
 
     loop(n, 0, 1)
@@ -58,7 +53,7 @@ object MyModule {
 
   // We can generalize `formatAbs` and `formatFactorial` to
   // accept a _function_ as a parameter
-  def formatResult(name: String, n: Int, f: Int => Int) = {
+  def formatResult(name: String, n: Int, f: Int => Int): Unit = {
     val msg = "The %s of %d is %d."
     msg.format(name, n, f(n))
   }
@@ -118,14 +113,14 @@ object MonomorphicBinarySearch {
   def binarySearch(ds: Array[Double], key: Double): Int = {
     @annotation.tailrec
     def go(low: Int, mid: Int, high: Int): Int = {
-      if (low > high) -mid - 1
+      if (low > high) { -mid - 1 }
       else {
         val mid2 = (low + high) / 2
         val d = ds(mid2) // We index into an array using the same
         // syntax as function application
-        if (d == key) mid2
-        else if (d > key) go(low, mid2, mid2 - 1)
-        else go(mid2 + 1, mid2, high)
+        if (d == key) { mid2 }
+        else if (d > key) { go(low, mid2, mid2 - 1) }
+        else { go(mid2 + 1, mid2, high) }
       }
     }
     go(0, 0, ds.length - 1)
@@ -140,14 +135,14 @@ object PolymorphicFunctions {
   def binarySearch[A](as: Array[A], key: A, gt: (A, A) => Boolean): Int = {
     @annotation.tailrec
     def go(low: Int, mid: Int, high: Int): Int = {
-      if (low > high) -mid - 1
+      if (low > high) { -mid - 1 }
       else {
         val mid2 = (low + high) / 2
         val a = as(mid2)
         val greater = gt(a, key)
-        if (!greater && !gt(key, a)) mid2
-        else if (greater) go(low, mid2, mid2 - 1)
-        else go(mid2 + 1, mid2, high)
+        if (!greater && !gt(key, a)) { mid2 }
+        else if (greater) { go(low, mid2, mid2 - 1) }
+        else { go(mid2 + 1, mid2, high) }
       }
     }
     go(0, 0, as.length - 1)
@@ -157,9 +152,9 @@ object PolymorphicFunctions {
   // an `Array[A]` is sorted
   def isSorted[A](as: Array[A], gt: (A, A) => Boolean): Boolean = {
     def loop(n: Int, as: Array[A], ordered: (A, A) => Boolean): Boolean = {
-      if (n >= as.length - 1) true
-      else if (ordered(as(n), as(n+1)) == false) false
-      else loop(n+1, as, ordered)
+      if (n >= as.length - 1) { true }
+      else if (!ordered(as(n), as(n + 1))) { false }
+      else { loop(n + 1, as, ordered) }
     }
 
     loop(0, as, gt)
