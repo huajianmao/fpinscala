@@ -117,13 +117,19 @@ object List {
   def length[A](l: List[A]): Int = foldRight(l, 0)((x, y) => 1 + y)
 
   // Exercise 3.10
-  def foldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B = {
+  def foldLeftMine[A, B](l: List[A], z: B)(f: (B, A) => B): B = {
     def loop(l: List[A], z: B, f: (B, A) => B, acc: B): B = l match {
       case Nil => acc
       case Cons(x, xs) => loop(xs, z, f, f(acc, x))
     }
 
     loop(l, z, f, z)
+  }
+
+  @annotation.tailrec
+  def foldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B = l match {
+    case Nil => z
+    case Cons(h, t) => foldLeft(t, f(z, h))(f)
   }
 
   // Exercise 3.11
@@ -133,4 +139,18 @@ object List {
 
   // Exercise 3.12
   def reverse[A](l: List[A]): List[A] = foldLeft(l, Nil: List[A])((xs, x) => Cons(x, xs))
+
+  /**
+   * Exercise 3.13 - Hard:
+   * Can you write foldLeft in terms of foldRight?
+   * How about the other way around?
+   * Implementing foldRight via foldLeft is useful
+   * because it lets us implement foldRight tail-recursively,
+   * which means it works even for large lists without overflowing the stack.
+   */
+  def foldLeftViaFoldRight[A, B](l: List[A], z: B)(f: (B, A) => B): B =
+    foldRight(List.reverse(l), z)((a: A, b: B) => f(b, a))
+
+  def foldRightViaFoldLeft[A, B](l: List[A], z: B)(f: (A, B) => B): B =
+    foldLeft(List.reverse(l), z)((b: B, a: A) => f(a, b))
 }
