@@ -86,4 +86,25 @@ class ListSuite extends FunSuite {
     val actual = List.appendViaFoldRight(head, tail)
     assert(actual == expected)
   }
+
+  test("concatenate a list of lists with available values") {
+    val listsList = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+    val expected = List(1, 2, 3, 4, 5, 6, 7, 8, 9)
+    val actual = List.concat(listsList)
+    assert(actual == expected)
+  }
+
+  test("concatenate a list of lists with null values") {
+    val listsList = List(List(1, 2, 3), Nil, List(7, 8, 9))
+    val expected = List(1, 2, 3, 7, 8, 9)
+    val actual = List.concat(listsList)
+    assert(actual == expected)
+  }
+
+  test("concatenate a list of lists with all null values") {
+    val listsList = List(Nil, Nil, Nil)
+    val expected = Nil
+    val actual = List.concat(listsList)
+    assert(actual == expected)
+  }
 }
