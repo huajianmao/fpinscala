@@ -40,4 +40,50 @@ class ListSuite extends FunSuite {
     val actual = List.foldRightViaFoldLeft(l, 1.0)(_ / _)
     assert(actual == expected)
   }
+
+  test("appendViaFoldRight with available value") {
+    val head = List(1, 2, 3, 4)
+    val tail = List(5, 6, 7, 8)
+    val expected = List(1, 2, 3, 4, 5, 6, 7, 8)
+    val actual = List.appendViaFoldRight(head, tail)
+    assert(actual == expected)
+  }
+
+  test("appendViaFoldRight with head null") {
+    val head = Nil
+    val tail = List(5, 6, 7, 8)
+    val expected = List(5, 6, 7, 8)
+    val actual = List.appendViaFoldRight(head, tail)
+  }
+
+  test("appendViaFoldRight with tail null") {
+    val head = List(5, 6, 7, 8)
+    val tail = Nil
+    val expected = List(5, 6, 7, 8)
+    val actual = List.appendViaFoldRight(head, tail)
+  }
+
+  test("appendViaFoldLeft with available value") {
+    val head = List(1, 2, 3, 4)
+    val tail = List(5, 6, 7, 8)
+    val expected = List(1, 2, 3, 4, 5, 6, 7, 8)
+    val actual = List.appendViaFoldRight(head, tail)
+    assert(actual == expected)
+  }
+
+  test("appendViaFoldLeft with head null") {
+    val head = Nil
+    val tail = List(5, 6, 7, 8)
+    val expected = List(5, 6, 7, 8)
+    val actual = List.appendViaFoldRight(head, tail)
+    assert(actual == expected)
+  }
+
+  test("appendViaFoldLeft with tail null") {
+    val head = List(5, 6, 7, 8)
+    val tail = Nil
+    val expected = List(5, 6, 7, 8)
+    val actual = List.appendViaFoldRight(head, tail)
+    assert(actual == expected)
+  }
 }
