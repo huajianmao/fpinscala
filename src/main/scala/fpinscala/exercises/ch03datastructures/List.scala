@@ -288,12 +288,25 @@ object List {
    * List(1,2) , List(2,3) , and List(4) as subsequences, among others.
    * You may have some difficulty finding a concise purely functional implementation
    * that is also efficient.
-   * That’s okay. Implement the function however comes most naturally.
-   * We’ll return to this implementation in chapter 5 and hopefully improve on it.
+   * That's okay. Implement the function however comes most naturally.
+   * We'll return to this implementation in chapter 5 and hopefully improve on it.
    *
    * Note: Any two values x and y can be compared for equality in Scala
    * using the expression x == y.
    *
    * def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean
    */
+  def reduce[A, B](xs: List[A], z: B)(f: (B, A) => B): B = {
+    foldLeft(xs, z)(f)
+  }
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = sup match {
+    case Nil if (sub == Nil) => true
+    case Nil => false
+    case Cons(x, xs) if reduce(zipWith(sup, sub, Nil, Nil)((a, b) => a match {
+      case Nil if (b != Nil) => false
+      case _ if (b == Nil) => true
+      case _ => a == b
+    }), true)(_ && _) => true
+    case Cons(x, xs) => hasSubsequence(xs, sub)
+  }
 }

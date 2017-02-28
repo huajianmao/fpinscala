@@ -266,4 +266,36 @@ class ListSuite extends FunSuite {
     val actual = List.zipWith(as, bs, "", 0)(_ == _.toString)
     assert(actual == expected)
   }
+
+  test("hasSubsequence with int") {
+    val sup = List(1, 2, 3, 4, 5)
+    val sub = List(2, 3)
+    val expected = true
+    val actual = List.hasSubsequence(sup, sub)
+    assert(actual == expected)
+  }
+
+  test("hasSubsequence with long sub int") {
+    val sup = List(1, 2, 3, 4, 5)
+    val sub = List(2, 3, 4, 5, 6)
+    val expected = false
+    val actual = List.hasSubsequence(sup, sub)
+    assert(actual == expected)
+  }
+
+  test("hasSubsequence with long sup Nil") {
+    val sup = Nil
+    val sub = List(2, 3, 4, 5, 6)
+    val expected = false
+    val actual = List.hasSubsequence(sup, sub)
+    assert(actual == expected)
+  }
+
+  test("hasSubsequence with long sub Nil") {
+    val sup = List(2, 3, 4, 5, 6)
+    val sub = Nil
+    val expected = true
+    val actual = List.hasSubsequence(sup, sub)
+    assert(actual == expected)
+  }
 }
