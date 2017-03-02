@@ -2,7 +2,7 @@
 
 This project holds all my exercise answers to the book [**Functional Programming in Scala**](https://www.manning.com/books/functional-programming-in-scala).
 
-You may find the ebook [here](https://pdf.k0nsl.org/C/Computer%20and%20Internet%20Collection/2015%20Computer%20and%20Internet%20Collection%20part%202/Manning%20Functional%20Programming%20in%20Scala%20(2015).pdf).
+~~You may find the ebook [here](https://pdf.k0nsl.org/C/Computer%20and%20Internet%20Collection/2015%20Computer%20and%20Internet%20Collection%20part%202/Manning%20Functional%20Programming%20in%20Scala%20(2015).pdf).~~
 
 ## Project Layout
 
