@@ -50,9 +50,16 @@ you may add the test cases in the test directory to check if your answer is righ
 When you are working on the exercises, the steps might be the followings:
 
 ``` shell
-sbt scalastyle # To check if the code style are all correct
+sbt ~scalastyle # To check if the code style are all correct
 sbt ~test # To check if all the test cases passes
 ```
+
+Here is a snapshot of my workspace in Vim with tmux enabled.
+Exercise answer code in upper left part, and test code in upper right,
+while the lower left is an area for running `sbt ~test` and `sbt ~scalastyle` in the lower right.
+
+![Scala Development Env. in Vim](./doc/images/snapshot.png "Scala Development Env. in VIM")
+
 
 ## With IntelliJ IDEA
 
