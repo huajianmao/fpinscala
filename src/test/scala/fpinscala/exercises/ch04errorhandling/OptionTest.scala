@@ -78,4 +78,71 @@ class OptionTest extends FunSuite {
     val actual = me.filter(f)
     assert(actual == expected)
   }
+
+  test("testVariance with non-None value Seq") {
+    val xs = Seq(1.0, 2, 3, 4, 5)
+    val expected = Some(2)
+    val actual = Option.variance(xs)
+    assert(actual == expected)
+  }
+
+  test("testVariance with empty Seq") {
+    val xs = Seq()
+    val expected = None
+    val actual = Option.variance(xs)
+    assert(actual == expected)
+  }
+
+  test("testMap2 with a None") {
+    val a = None
+    val b = Some(1)
+    val f = (a: Int, b: Int) => a / b
+    val expected = None
+    val actual = Option.map2(a, b)(f)
+    assert(actual == expected)
+  }
+
+  test("testMap2 with b None") {
+    val a = Some(1)
+    val b = None
+    val f = (a: Int, b: Int) => a / b
+    val expected = None
+    val actual = Option.map2(a, b)(f)
+    assert(actual == expected)
+  }
+
+  test("testMap2 with non-None") {
+    val a = Some(1)
+    val b = Some(2)
+    val f = (a: Int, b: Int) => 1.0 * a / b
+    val expected = Some(0.5)
+    val actual = Option.map2(a, b)(f)
+    assert(actual == expected)
+  }
+  test("testMap2ViaFlatMap with a None") {
+    val a = None
+    val b = Some(1)
+    val f = (a: Int, b: Int) => a / b
+    val expected = None
+    val actual = Option.map2ViaFlatMap(a, b)(f)
+    assert(actual == expected)
+  }
+
+  test("testMap2ViaFlatMap with b None") {
+    val a = Some(1)
+    val b = None
+    val f = (a: Int, b: Int) => a / b
+    val expected = None
+    val actual = Option.map2ViaFlatMap(a, b)(f)
+    assert(actual == expected)
+  }
+
+  test("testMap2ViaFlatMap with non-None") {
+    val a = Some(1)
+    val b = Some(2)
+    val f = (a: Int, b: Int) => 1.0 * a / b
+    val expected = Some(0.5)
+    val actual = Option.map2ViaFlatMap(a, b)(f)
+    assert(actual == expected)
+  }
 }
