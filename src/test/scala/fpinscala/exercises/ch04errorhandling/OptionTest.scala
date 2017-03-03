@@ -145,4 +145,42 @@ class OptionTest extends FunSuite {
     val actual = Option.map2ViaFlatMap(a, b)(f)
     assert(actual == expected)
   }
+
+  test("testSequence with good values") {
+    val a = List(Some(1), Some(2), Some(3))
+    val expected = Some(List(1, 2, 3))
+    val actual = Option.sequence(a)
+    assert(actual == expected)
+  }
+
+  test("testSequence with None value") {
+    val a = List(Some(1), None, Some(3))
+    val expected = None
+    val actual = Option.sequence(a)
+    assert(actual == expected)
+  }
+
+  test("testTraverse with good values") {
+    val a = List(1, 2, 3)
+    val f = (x:Int) => Some(x.toString)
+    val expected = Some(List("1", "2", "3"))
+    val actual = Option.traverse(a)(f)
+    assert(actual == expected)
+  }
+
+  test("testTraverse with ok int values") {
+    val a = List("1", "2", "3")
+    val f = (x:String) => Option.Try(x.toInt)
+    val expected = Some(List(1, 2, 3))
+    val actual = Option.traverse(a)(f)
+    assert(actual == expected)
+  }
+
+  test("testTraverse with bad value") {
+    val a = List("1", "2", "x")
+    val f = (x:String) => Option.Try(x.toInt)
+    val expected = None
+    val actual = Option.traverse(a)(f)
+    assert(actual == expected)
+  }
 }
