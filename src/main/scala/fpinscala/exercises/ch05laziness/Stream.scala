@@ -45,6 +45,55 @@ sealed trait Stream[+A] {
     case Cons(h, t) if p(h()) => Cons(h, () => t().takeWhile(p))
     case _ => Empty
   }
+
+
+  /**
+   * Code for Example in Section 5.3
+   */
+  def exists(p: A => Boolean): Boolean = this match {
+    case Cons(h, t) if p(h()) || t().exists(p) => true
+    case _ => false
+  }
+  def foldRight[B](z: B)(f: (A, => B) => B): B = this match {
+    case Cons(h, t) => f(h(), t().foldRight(z)(f))
+    case _ => z
+  }
+  def existsViaFoldRight(p: A => Boolean): Boolean = {
+    foldRight(false)(p(_) || _)
+  }
+
+  /**
+   * Exercise 5.4
+   *
+   * Implement forAll,
+   * which checks that all elements in the Stream match a given predicate.
+   * Your implementation should terminate the traversal
+   * as soon as it encounters a nonmatching value.
+   */
+  def forAll(p: A => Boolean): Boolean = {
+    foldRight(true)(p(_) && _)
+  }
+
+  /**
+   * Exercise 5.5
+   *
+   * Use foldRight to implement takeWhile.
+   */
+  def takeWhileViaFoldRight(p: A => Boolean): Stream[A] = {
+    foldRight(Empty: Stream[A])((a, b) =>
+      if (p(a)) Cons(() => a, () => b)
+      else Empty
+    )
+  }
+
+  /**
+   * Exercise 5.6 - Hard
+   *
+   * Implement headOption using foldRight.
+   */
+  def headOptionViaFoldRight: Option[A] = {
+    foldRight(None: Option[A])((a, b) => Some(a))
+  }
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
