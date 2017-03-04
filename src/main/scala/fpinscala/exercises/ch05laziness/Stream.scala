@@ -94,6 +94,33 @@ sealed trait Stream[+A] {
   def headOptionViaFoldRight: Option[A] = {
     foldRight(None: Option[A])((a, b) => Some(a))
   }
+
+  /**
+   * Exercise 5.7
+   *
+   * Implement map, filter, append, and flatMap using foldRight.
+   * The append method should be non-strict in its argument.
+   */
+  def map[B](f: A => B): Stream[B] = {
+    foldRight(Empty: Stream[B])((a, b) => Stream.cons(f(a), b))
+  }
+  def filter(p: A => Boolean): Stream[A] = {
+    foldRight(Empty: Stream[A])((a, b) => {
+      if (p(a)) Stream.cons(a, b)
+      else b
+    })
+  }
+  /**
+   * def append(as: => Stream[A]): Stream[A] = {
+   *
+   * http://stackoverflow.com/questions/9619121/why-is-parameter-in-contravariant-position
+   */
+  def append[B >: A](as: => Stream[B]): Stream[B] = {
+    foldRight(as)(Stream.cons(_, _))
+  }
+  def flatMap[B](f: A => Stream[B]): Stream[B] = {
+    foldRight(Empty: Stream[B])(f(_).append(_))
+  }
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]

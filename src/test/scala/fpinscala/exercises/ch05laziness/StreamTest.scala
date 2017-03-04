@@ -171,4 +171,68 @@ class StreamTest extends FunSuite {
     val actual = me.headOptionViaFoldRight
     assert(actual == expected)
   }
+
+  test("testMapViaFoldRight with normal values") {
+    val me = Stream({println("hi"); 1}, {println("hi"); 2}, 3, 4)
+    val f = (x: Int) => x + 1
+    val expected = Stream(2, 3, 4, 5).toList
+    val actual = me.map(f).toList
+    assert(actual == expected)
+  }
+
+  test("testMapViaFoldRight with Empty") {
+    val me = Empty
+    val f = (x: Int) => x + 1
+    val expected = Empty
+    val actual = me.map(f)
+    assert(actual == expected)
+  }
+
+  test("testFilterViaFoldRight with normal values") {
+    val me = Stream({println("hi"); 1}, {println("hi"); 2}, 3, 4)
+    val p = (x: Int) => x % 2 == 0
+    val expected = Stream(2, 4).toList
+    val actual = me.filter(p).toList
+    assert(actual == expected)
+  }
+
+  test("testFilterViaFoldRight with Empty") {
+    val me = Empty
+    val p = (x: Int) => x % 2 == 0
+    val expected = Empty
+    val actual = me.filter(p)
+    assert(actual == expected)
+  }
+
+  test("testAppendViaFoldRight with normal values") {
+    val me = Stream({println("hi"); 1}, {println("hi"); 2}, 3, 4)
+    val as = Stream({println("hi"); 5}, {println("hi"); 6}, 7, 8)
+    val expected = Stream(1, 2, 3, 4, 5, 6, 7, 8).toList
+    val actual = me.append(as).toList
+    assert(actual == expected)
+  }
+
+  test("testAppendViaFoldRight with Empty") {
+    val me = Empty
+    val as = Stream({println("hi"); 5}, {println("hi"); 6}, 7, 8)
+    val expected = Stream(5, 6, 7, 8).toList
+    val actual = me.append(as).toList
+    assert(actual == expected)
+  }
+
+  test("testFlatMapViaFoldRight with normal values") {
+    val me = Stream({println("hi"); 1}, {println("hi"); 2}, 3, 4)
+    val f = (x: Int) => Cons(() => x, () => Empty)
+    val expected = Stream(1, 2, 3, 4).toList
+    val actual = me.flatMap(f).toList
+    assert(actual == expected)
+  }
+
+  test("testFlatMapViaFoldRight with Empty") {
+    val me = Empty
+    val f = (x: Int) => Cons(() => x, () => Empty)
+    val expected = Empty
+    val actual = me.flatMap(f)
+    assert(actual == expected)
+  }
 }
