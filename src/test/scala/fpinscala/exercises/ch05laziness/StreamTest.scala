@@ -293,4 +293,118 @@ class StreamTest extends FunSuite {
     val actual = me.take(4).toList
     assert(actual == expected)
   }
+
+  test("testMapViaUnfold with normal values") {
+    val me = Stream({println("hi"); 1}, {println("hi"); 2}, 3, 4)
+    val f = (x: Int) => x + 1
+    val expected = Stream(2, 3, 4, 5).toList
+    val actual = me.mapViaUnfold(f).toList
+    assert(actual == expected)
+  }
+
+  test("testMapViaUnfold with Empty") {
+    val me = Empty
+    val f = (x: Int) => x + 1
+    val expected = Empty
+    val actual = me.mapViaUnfold(f)
+    assert(actual == expected)
+  }
+
+  test("testTakeViaUnfold with normal values") {
+    val me = Stream(1, 2, 3, 4)
+    val n = 2
+    val expected = Stream(1, 2).toList
+    val actual = me.takeViaUnfold(n).toList
+    assert(actual == expected)
+  }
+
+  test("testTakeViaUnfold with normal expression values") {
+    val me = Stream({println("hi"); 1}, {println("hi"); 2}, 3, 4)
+    val n = 2
+    val expected = Stream(1, 2).toList
+    val actual = me.takeViaUnfold(n).toList
+    assert(actual == expected)
+  }
+
+  test("testTakeViaUnfold with Empty value") {
+    val me = Empty
+    val n = 2
+    val expected = Empty
+    val actual = me.takeViaUnfold(n)
+    assert(actual == expected)
+  }
+
+  test("testTakeWhileViaUnfold with normal values") {
+    val me = Stream(1, 2, 3, 4)
+    val p = (x: Int) => x < 3
+    val expected = Stream(1, 2).toList
+    val actual = me.takeWhileViaUnfold(p).toList
+    assert(actual == expected)
+  }
+
+  test("testTakeWhileViaUnfold with normal expression values") {
+    val me = Stream({println("hi"); 1}, {println("hi"); 2}, 3, 4)
+    val p = (x: Int) => x < 3
+    val expected = Stream(1, 2).toList
+    val actual = me.takeWhileViaUnfold(p).toList
+    assert(actual == expected)
+  }
+
+  test("testTakeWhileViaUnfold with Empty value") {
+    val me = Empty
+    val p = (x: Int) => x < 3
+    val expected = Empty
+    val actual = me.takeWhileViaUnfold(p)
+    assert(actual == expected)
+  }
+
+  test("testZipWith with normal value") {
+    val as = Stream(1, 2, 3)
+    val bs = Stream(4, 5, 6)
+    val expected = Stream(5, 7, 9).toList
+    val actual = as.zipWithViaUnfold(bs)((x: Int, y: Int) => x + y).toList
+    assert(actual == expected)
+  }
+
+  test("testZipWith with one Empty") {
+    val as = Stream(1, 2, 3)
+    val bs = Stream()
+    val expected = Empty
+    val actual = as.zipWithViaUnfold(bs)((x: Int, y: Int) => x + y)
+    assert(actual == expected)
+  }
+
+  test("testZipWith with two Empty") {
+    val as = Empty
+    val bs = Stream()
+    val expected = Empty
+    val actual = as.zipWithViaUnfold(bs)((x: Int, y: Int) => x + y)
+    assert(actual == expected)
+  }
+
+  test("testZipWith with string and int normal value") {
+    val as = Stream("1", "2", "3")
+    val bs = Stream(1, 3, 3)
+    val expected = Stream(true, false, true).toList
+    val actual = as.zipWithViaUnfold(bs)((x: String, y: Int) => x == y.toString).toList
+    assert(actual == expected)
+  }
+
+  test("testZipWith with string and int one Nil") {
+    val as = Stream("1", "2", "3")
+    val bs = Empty: Stream[Int]
+    val expected = Empty
+    val actual = as.zipWithViaUnfold(bs)((x: String, y: Int) => x == y.toString)
+    assert(actual == expected)
+  }
+
+  test("testZipWith with string and int two Nil") {
+    val as = Empty
+    val bs = Stream()
+    val expected = Nil
+    val actual = as.zipWithViaUnfold(bs)((x: Int, y: Int) => x + y).toList
+    assert(actual == expected)
+  }
+
+
 }

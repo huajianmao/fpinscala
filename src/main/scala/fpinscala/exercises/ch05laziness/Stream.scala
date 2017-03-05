@@ -122,6 +122,58 @@ sealed trait Stream[+A] {
     foldRight(Empty: Stream[B])(f(_).append(_))
   }
 
+  /**
+   * Exercise 5.13
+   *
+   * Use unfold to implement map, take, takeWhile, zipWith (as in chapter 3),
+   * and zipAll.
+   * The zipAll function should continue the traversal
+   * as long as either stream has more elements
+   * --- it uses Option to indicate whether each stream has been exhausted.
+   */
+  def mapViaUnfold[B](f: A => B): Stream[B] = {
+    Stream.unfold(this)((s: Stream[A]) => {
+      s match {
+        case Empty => None
+        case Cons(h, t) => Some(f(h()), t())
+      }
+    })
+  }
+  def takeViaUnfold(n: Int): Stream[A] = {
+    Stream.unfold((this, n))((s: (Stream[A], Int)) => {
+      s match {
+        case (Cons(h, t), x) if x > 0 => Some(h(), (t(), x - 1))
+        case _ => None
+      }
+    })
+  }
+  def takeWhileViaUnfold(p: A => Boolean): Stream[A] = {
+    Stream.unfold(this)((s: Stream[A]) => {
+      s match {
+        case Cons(h, t) if (p(h())) => Some(h(), t())
+        case _ => None
+      }
+    })
+  }
+  def zipWithViaUnfold[B, C](bs: Stream[B])(f: (A, B) => C): Stream[C] = {
+    Stream.unfold((this, bs))((s: (Stream[A], Stream[B])) => {
+      s match {
+        case (Cons(h, t), Cons(bh, bt)) => Some(f(h(), bh()), (t(), bt()))
+        case _ => None
+      }
+    })
+  }
+  // FIXME: No test case provided yet.
+  def zipAll[B, C](bs: Stream[B])(f: (Option[A], Option[B]) => C): Stream[C] = {
+    Stream.unfold((this, bs))((s: (Stream[A], Stream[B])) => {
+      s match {
+        case (Cons(h, t), Empty) => Some(f(Some(h()), None), (t(), Empty: Stream[B]))
+        case (Empty, Cons(h, t)) => Some(f(None, Some(h())), (Empty: Stream[A], t()))
+        case (Cons(h, t), Cons(bh, bt)) => Some(f(Some(h()), Some(bh())), (t(), bt()))
+        case _ => None
+      }
+    })
+  }
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
