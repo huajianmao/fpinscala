@@ -20,4 +20,22 @@ class Laziness {
   // val x = maybeTwice2(true, { println("hi"); 1+41 })
   // hi     // <- one hi only
   // x: Int = 84
+
+  // Stream(1, 2, 3, 4).map(_ + 10).filter(_ % 2 == 0).toList
+  // Cons(11, Stream(2, 3, 4).map(_ + 10)).filter(_ % 2 == 0).toList
+  // Stream(2, 3, 4).map(_ + 10).filter(_ % 2 == 0).toList
+  // Cons(12, Stream(3, 4).map(_ + 10)).filter(_ % 2 == 0).toList
+  // Cons(12, Stream(3, 4).map(_ + 10).filter(_ % 2 == 0)).toList
+  // 12::Stream(3, 4).map(_ + 10).filter(_ % 2 == 0).toList
+  // 12::Cons(13, Stream(4).map(_ + 10)).filter(_ % 2 == 0).toList
+  // 12::Stream(4).map(_ + 10).filter(_ % 2 == 0).toList
+  // 12::Cons(14, Empty.map(_ + 10)).filter(_ % 2 == 0).toList
+  // 12::Cons(14, Empty.map(_ + 10).filter(_ % 2 == 0)).toList
+  // 12:;14::Empty.map(_ + 10).filter(_ % 2 == 0).toList
+  // 12::14::Empty.filter(_ % 2 == 0).toList
+  // 12::14::Empty.toList
+  // 12::14::List()
+  // 12::14
+
+  // val ones: Stream[Int] = Stream.cons(1, ones)
 }

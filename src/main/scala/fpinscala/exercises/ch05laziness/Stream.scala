@@ -121,6 +121,7 @@ sealed trait Stream[+A] {
   def flatMap[B](f: A => Stream[B]): Stream[B] = {
     foldRight(Empty: Stream[B])(f(_).append(_))
   }
+
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -138,4 +139,51 @@ object Stream {
     if (as.isEmpty) empty
     else cons(as.head, apply(as.tail: _*))
   }
+
+  /**
+   * Exercise 5.8
+   *
+   * Generalize ones slightly to the function constant,
+   * which returns an infinite Stream of a given value.
+   */
+  def constant[A](a: A): Stream[A] = cons(a, constant(a))
+
+  /**
+   * Exercise 5.9
+   *
+   * Write a function that generates an infinite stream of integers,
+   * starting from n , then n + 1 , n + 2 , and so on.
+   */
+  def from(n: Int): Stream[Int] = Stream.cons(n, from(n + 1))
+
+  /**
+   * Exercise 5.10
+   *
+   * Write a function fibs that generates the infinite stream of Fibonacci numbers:
+   * 0, 1, 1, 2, 3, 5, 8, and so on.
+   */
+  def fibs(a: Int, b: Int): Stream[Int] = {
+    cons(a, cons(b, fibs(a + b, b + a + b)))
+  }
+
+  /**
+   * Exercise 5.11
+   *
+   * Write a more general stream-building function called unfold.
+   * It takes an initial state,
+   * and a function for producing both the next state and the next value
+   * in the generated stream.
+   */
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
+    f(z) match {
+      case None => empty
+      case Some((a, s)) => cons(a, unfold(s)(f))
+    }
+  }
+
+  /**
+   * Exercise 5.12
+   *
+   * Write fibs, from, constant, and ones in terms of unfold.
+   */
 }
