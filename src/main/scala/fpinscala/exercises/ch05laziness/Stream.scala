@@ -186,4 +186,19 @@ object Stream {
    *
    * Write fibs, from, constant, and ones in terms of unfold.
    */
+  def fibsViaUnfold(a: Int, b: Int): Stream[Int] = {
+    unfold((a, b))((s: (Int, Int)) => Some(s._1, (s._2, s._1 + s._2)))
+  }
+
+  def fromViaUnfold(n: Int): Stream[Int] = {
+    unfold(n)(s => Some((s, s + 1)))
+  }
+
+  def constantViaUnfold[A](a: A): Stream[A] = {
+    unfold(a)(s => Some((s, s)))
+  }
+
+  def onesViaUnfold: Stream[Int] = {
+    unfold(1)(s => Some((s, s)))
+  }
 }

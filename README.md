@@ -60,6 +60,18 @@ while the lower left is an area for running `sbt ~test` and `sbt ~scalastyle` in
 
 ![Scala Development Env. in Vim](./doc/images/snapshot.png "Scala Development Env. in VIM")
 
+Here is my tmux session config:
+
+``` shell
+new -s fpinscala -n terminal
+neww -n dev 'vim; zsh'
+splitw -v -p 20 -t 0 bash -c 'sbt ~test'
+splitw -h -p 50 -t 1 bash -c 'sbt ~scalastyle'
+selectw -t 1
+selectp -t 0
+```
+
+And you may refer to my [blog](https://huajianmao.github.io/ubuntu-environment-setup/#tmux) and [github](https://github.com/huajianmao/config/tree/master/tmux) for detail.
 
 ## With IntelliJ IDEA
 

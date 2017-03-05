@@ -265,4 +265,32 @@ class StreamTest extends FunSuite {
     val actual = me.take(7).toList
     assert(actual == expected)
   }
+
+  test("testFibsViaUnfold with take") {
+    val me = Stream.fibsViaUnfold(0, 1)
+    val expected = List(0, 1, 1, 2, 3, 5, 8)
+    val actual = me.take(7).toList
+    assert(actual == expected)
+  }
+
+  test("testFromViaUnfold with take") {
+    val me = Stream.fromViaUnfold(4)
+    val expected = List(4, 5, 6, 7)
+    val actual = me.take(4).toList
+    assert(actual == expected)
+  }
+
+  test("testConstantViaUnfold with take") {
+    val me = Stream.constantViaUnfold(1)
+    val expected = List(1, 1, 1, 1)
+    val actual = me.take(4).toList
+    assert(actual == expected)
+  }
+
+  test("testOnesViaUnfold with take") {
+    val me = Stream.onesViaUnfold
+    val expected = List(1, 1, 1, 1)
+    val actual = me.take(4).toList
+    assert(actual == expected)
+  }
 }
