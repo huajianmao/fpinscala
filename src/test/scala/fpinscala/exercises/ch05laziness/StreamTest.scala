@@ -406,5 +406,45 @@ class StreamTest extends FunSuite {
     assert(actual == expected)
   }
 
+  test("testStartsWith with String normal values") {
+    val me = Stream({println("hi"); 1}, {println("hi"); 2}, 3, 4)
+    val s = Stream({println("hi"); 1}, {println("hi"); 2})
+    val expected = true
+    val actual = me.startsWith(s)
+    assert(actual == expected)
+  }
 
+  test("testStartsWith with Empty values") {
+    val me = Stream({println("hi"); 1}, {println("hi"); 2}, 3, 4)
+    val s = Empty
+    val expected = true
+    val actual = me.startsWith(s)
+    assert(actual == expected)
+  }
+
+  test("testStartsWith with false values") {
+    val me = Stream({println("hi"); 1}, {println("hi"); 2}, 3, 4)
+    val s = Stream({println("hi"); 1}, {println("hi"); 2}, 4, 4)
+    val expected = false
+    val actual = me.startsWith(s)
+    assert(actual == expected)
+  }
+
+  test("testTails with normal values") {
+    val me = Stream({println("hi"); 1}, {println("hi"); 2}, 3)
+    val expected = Stream(
+      Stream(1, 2, 3).toList,
+      Stream(2, 3).toList,
+      Stream(3).toList,
+      Stream().toList).toList
+    val actual = me.tails.map(_.toList).toList
+    assert(actual == expected)
+  }
+
+  test("testScanRight with normal values") {
+    val me = Stream({println("hi"); 1}, {println("hi"); 2}, 3)
+    val expected = Stream(6, 5, 3, 0).toList
+    val actual = me.scanRight(0)(_ + _).toList
+    assert(actual == expected)
+  }
 }
