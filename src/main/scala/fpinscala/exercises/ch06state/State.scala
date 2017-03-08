@@ -1,8 +1,5 @@
 package fpinscala.exercise.ch06state
 
-import scala.collection.immutable.Stream.Empty
-;
-
 trait RNG {
   def nextInt: (Int, RNG)
 }
@@ -144,6 +141,43 @@ object RNG {
   }
   def intsViaSequence(count: Int)(rng: RNG): (List[Int], RNG) = {
     sequence(List.fill(count)(int))(rng)
+  }
+
+  /**
+   * Exercise 6.8
+   *
+   * Implement flatMap, and then use it to implement nonNegativeLessThan.
+   */
+  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = {
+    rng => {
+      val (a, rng1) = f(rng)
+      g(a)(rng1)
+    }
+  }
+
+  def nonNegativeLessThan(n: Int): Rand[Int] = {
+    flatMap(nonNegativeInt) { a =>
+      val mod = a % n
+      if (a + (n - 1) - mod >= 0) unit(mod)
+      else nonNegativeLessThan(n)
+    }
+  }
+
+  /**
+   * Exercise 6.9
+   *
+   * Reimplement map and map2 in terms of flatMap.
+   * The fact that this is possible is what we're referring to when we say that
+   * flatMap is more powerful than map and map2.
+   */
+  def mapViaFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B] = {
+    flatMap(s)(a => unit(f(a)))
+  }
+  def map2ViaFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
+    flatMap(ra)(a => { rng => {
+      val (b, rngc) = rb(rng)
+      (f(a, b), rngc)
+    }})
   }
 }
 

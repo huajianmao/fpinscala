@@ -18,7 +18,7 @@ class StateTest extends FunSuite {
     assert(actual == expected)
   }
 
-  test("tetDouble") {
+  test("testDouble") {
     val rng = SimpleRNG(SimpleRNG(42).nextInt._1)
     val actual = RNG.double(rng)._1
     assert(actual < 1.0)
@@ -44,5 +44,24 @@ class StateTest extends FunSuite {
     val count = 100
     val actual = RNG.ints(count)(rng)
     assert(actual._1.length == count)
+  }
+
+  test("nonNegativeEven") {
+    val rng = SimpleRNG(42)
+    val actual = RNG.nonNegativeEven(rng)
+    assert(actual._1 % 2 == 0 && actual._1 >= 0)
+  }
+
+  test("testDoubleViaMap") {
+    val rng = SimpleRNG(SimpleRNG(42).nextInt._1)
+    val actual = RNG.doubleViaMap(rng)._1
+    assert(actual < 1.0)
+    assert(actual >= 0)
+  }
+
+  test("testDoubleViaMap with map") {
+    val doubles = (0 until 10000).map(i => {
+      RNG.doubleViaMap(SimpleRNG(i))._1
+    }).toList.forall(d => (d >= 0 && d < 1.0))
   }
 }
