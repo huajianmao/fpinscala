@@ -1,8 +1,12 @@
-package fpinscala.exercise.ch06state;
+package fpinscala.exercise.ch06state
+
+import scala.collection.immutable.Stream.Empty
+;
 
 trait RNG {
   def nextInt: (Int, RNG)
 }
+
 object RNG {
 
   /**
@@ -13,12 +17,15 @@ object RNG {
    * Make sure to handle the corner case when nextInt returns Int.MinValue,
    * which doesn’t have a non-negative counterpart.
    */
+
   def nonNegativeInt(rng: RNG): (Int, RNG) = {
     val (n, nextRNG) = rng.nextInt
 
     if (n < 0) (-(n + 1), nextRNG)
     else (n, nextRNG)
   }
+
+
 
   /**
    * Exercise 6.2
@@ -62,6 +69,82 @@ object RNG {
     }
     loop(count, rng, List())
   }
+
+  type Rand[+A] = RNG => (A, RNG)
+  val int: Rand[Int] = _.nextInt
+  def unit[A](a: A): Rand[A] = rng => (a, rng)
+  def map[A, B](s: Rand[A])(f: A => B): Rand[B] = {
+    rng => {
+      val (a, rng2) = s(rng)
+      (f(a), rng2)
+    }
+  }
+  def nonNegativeEven: Rand[Int] = {
+    map(nonNegativeInt)(i => i - i % 2)
+  }
+
+  /**
+   * Exercise 6.5
+   *
+   * Use map to reimplement double in a more elegant way.
+   */
+  def doubleViaMap: Rand[Double] = {
+    map(nonNegativeInt)(i => i.toDouble / (Int.MaxValue.toDouble + 1))
+  }
+
+  /**
+   * Exercise 6.6
+   *
+   * Write the implementation of map2 based on the following signature.
+   * This function takes two actions, ra and rb,
+   * and a function f for combining their results,
+   * and returns a new action that combines them
+   */
+  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
+    rng => {
+      val (raa, rng1) = ra(rng)
+      val (rba, rng2) = rb(rng1)
+      (f(raa, rba), rng2)
+    }
+  }
+  def both[A, B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] = {
+    map2(ra, rb)((_, _))
+  }
+  def randIntDouble: Rand[(Int, Double)] = {
+    both(int, double)
+  }
+  def randDoubleInt: Rand[(Double, Int)] = {
+    both(double, int)
+  }
+
+  /**
+   * Exercise 6.7 - Hard
+   *
+   * If you can combine two RNG transitions,
+   * you should be able to combine a whole list of them.
+   * Implement sequence for combining a List of transitions
+   * into a single transition.
+   * Use it to reimplement the ints function you wrote before.
+   * For the latter, you can use the standard library function List.fill(n)(x)
+   * to make a list with x repeated n times.
+   */
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
+    rng => {
+      def loop(fs: List[Rand[A]], list: List[A], thisRNG: RNG): (List[A], RNG) = {
+        fs match {
+          case r::rs => loop(rs, (r(thisRNG)._1 :: list.reverse).reverse, r(thisRNG)._2)
+          case _ => (list, thisRNG)
+        }
+      }
+      loop(fs, List(), rng)
+    }
+  }
+  def sequenceViaFoldRight[A](fs: List[Rand[A]]): Rand[List[A]] = {
+    fs.foldRight(unit(List[A]()))((rand, randOfList) => map2(rand, randOfList)(_ :: _))
+  }
+  def intsViaSequence(count: Int)(rng: RNG): (List[Int], RNG) = {
+    sequence(List.fill(count)(int))(rng)
+  }
 }
 
 case class SimpleRNG(seed: Long) extends RNG {
@@ -72,4 +155,3 @@ case class SimpleRNG(seed: Long) extends RNG {
     (n, nextRNG)
   }
 }
-
