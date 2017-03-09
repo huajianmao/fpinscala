@@ -64,4 +64,28 @@ class StateTest extends FunSuite {
       RNG.doubleViaMap(SimpleRNG(i))._1
     }).toList.forall(d => (d >= 0 && d < 1.0))
   }
+
+  test("testSimulateMachine from book case") {
+    val machine = Machine(true, 5, 10)
+    val inputs = List(Coin, Turn, Coin, Turn, Turn, Coin, Turn, Coin, Turn)
+    val expected= Machine(true, 1, 14)
+    val (_, actual) = CandyDispenser.simulateMachine(inputs).run(machine)
+    assert(actual == expected)
+  }
+
+  test("testSimulateMachine") {
+    val machine = Machine(true, 9, 0)
+    val inputs = List(Coin, Turn, Turn, Turn, Coin)
+    val expected= Machine(false, 8, 2)
+    val (_, actual) = CandyDispenser.simulateMachine(inputs).run(machine)
+    assert(actual == expected)
+  }
+
+  test("testSimulateMachine with no candies") {
+    val machine = Machine(true, 0, 0)
+    val inputs = List(Coin, Turn, Turn, Turn, Coin)
+    val expected= machine
+    val (_, actual) = CandyDispenser.simulateMachine(inputs).run(machine)
+    assert(actual == expected)
+  }
 }
