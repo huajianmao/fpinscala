@@ -181,6 +181,36 @@ object RNG {
   }
 }
 
+/**
+ * Exercise 6.10
+ *
+ * Generalize the functions unit, map, map2, flatMap, and sequence.
+ * Add them as methods on the State case class where possible.
+ * Otherwise you should put them in a State companion object.
+ */
+case class State[S, +A](run: S => (A, S)) {
+  def map[B](f: A => B): State[S, B] = State((s: S) => {
+    val (a, ss) = run(s)
+    (f(a), ss)
+  })
+  def map2[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] = State((s: S) => {
+    val (a, ss) = run(s)
+    val (b, sss) = sb.run(ss)
+    (f(a, b), sss)
+  })
+  def flatMap[B](f: A => State[S, B]): State[S, B] = State((s: S) => {
+    val (a, ss) = run(s)
+    f(a).run(ss)
+  })
+}
+
+object State {
+  def unit[S, A](a: A): State[S, A] = State((s: S) => (a, s))
+
+  def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] =
+    fs.foldRight(unit[S, List[A]](List()))((s, sl) => {s.map2(sl)(_ :: _)})
+}
+
 case class SimpleRNG(seed: Long) extends RNG {
   def nextInt: (Int, RNG) = {
     val newSeed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL
