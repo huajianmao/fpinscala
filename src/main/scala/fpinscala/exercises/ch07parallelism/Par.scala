@@ -2,6 +2,8 @@ package fpinscala.exercises.ch07parallelism
 
 import java.util.concurrent._
 
+import language.implicitConversions
+
 object Par {
 
   // scalastyle:off noimpl
@@ -107,9 +109,19 @@ object Par {
         ret
     }
   }
-  def map2V[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = (es: ExecutorService) => {
+  def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = es => {
     Map2Future(a(es), b(es), f)
   }
+
+  /**
+   * Exercise 7.4
+   *
+   * This API already enables a rich set of operations.
+   * Herer's a simple example: using lazyUnit,
+   * write a function to convert any function A => B to one
+   * that evaluates its result asynchronously.
+   */
+  def asyncF[A, B](f: A => B): A => Par[B] = a => lazyUnit(f(a))
 
 
   def fork[A](a: => Par[A]): Par[A] = (es: ExecutorService) => {
@@ -120,4 +132,9 @@ object Par {
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
   def run[A](s: ExecutorService)(a: Par[A]): Future[A] = a(s)
   // scalastyle:on noimpl
+  /* Gives us infix syntax for `Par`. */
+  implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
+
+  class ParOps[A](p: Par[A]) {
+  }
 }
