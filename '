@@ -68,13 +68,7 @@ object Par {
                    (f: (A, B) => C)
                    (timeout: Long, units: TimeUnit): Par[C] = (es: ExecutorService) => {
     es.submit(new Callable[C] {
-      def call = {
-        val start = System.nanoTime
-        val av = a(es).get(timeout, units)
-        val stop = System.nanoTime
-        val bv = b(es).get(timeout, units)
-        f(av, bv)
-      }
+      def call = f(a(es).get(timeout, units), b(es).get(timeout, units))
     })
   }
    */
@@ -107,7 +101,7 @@ object Par {
         ret
     }
   }
-  def map2V[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = (es: ExecutorService) => {
+  def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = (es: ExecutorService) => {
     Map2Future(a(es), b(es), f)
   }
 
