@@ -131,6 +131,29 @@ object Par {
   }
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
   def run[A](s: ExecutorService)(a: Par[A]): Future[A] = a(s)
+
+  def sortPar(parList: Par[List[Int]]): Par[List[Int]] = {
+    map2(parList, unit(()))((a, _) => a.sorted)
+  }
+  def map[A, B](a: Par[A])(f: A => B): Par[B] = {
+    map2(a, unit(()))((a, _) => f(a))
+  }
+  def sortParViaMap(parList: Par[List[Int]]): Par[List[Int]] = {
+    map(parList)(_.sorted)
+  }
+  def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = {
+    val fbs: List[Par[B]] = ps.map(asyncF(f))
+    sequence(fbs)
+  }
+  /**
+   * Exercise 7.5 - Hard
+   *
+   * Write this function, called sequence.
+   * No additional primitives are required. Do not call run.
+   */
+  def sequence[A](ps: List[Par[A]]): Par[List[A]] = {
+    ps.foldRight(lazyUnit(List()): Par[List[A]])(map2(_, _)(_::_))
+  }
   // scalastyle:on noimpl
   /* Gives us infix syntax for `Par`. */
   implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
