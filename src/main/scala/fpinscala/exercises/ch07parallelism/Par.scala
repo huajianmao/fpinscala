@@ -154,6 +154,19 @@ object Par {
   def sequence[A](ps: List[Par[A]]): Par[List[A]] = {
     ps.foldRight(lazyUnit(List()): Par[List[A]])(map2(_, _)(_::_))
   }
+
+  /**
+   * Exercise 7.6
+   *
+   * Implement parFilter, which filters elements of a list in parallel.
+   *
+   * Copied from:
+   * https://github.com/fpinscala/fpinscala/blob/master/answerkey/parallelism/06.answer.scala
+   */
+  def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = {
+    val pars = as.map(asyncF((a: A) => if (f(a)) List(a) else List()))
+    map(sequence(pars))(_.flatten)
+  }
   // scalastyle:on noimpl
   /* Gives us infix syntax for `Par`. */
   implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
