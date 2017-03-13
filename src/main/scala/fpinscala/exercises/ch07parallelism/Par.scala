@@ -182,6 +182,37 @@ object Par {
    */
   // map(y)(f.g) = f.g(y) = f(g(y)) = f(map(y)(g)) = map(map(y)(g))(f)
 
+
+  /**
+   * Exercise 7.8 - Hard
+   *
+   * Take a look through the various static methods in Executors
+   * to get a feel for the different implementations of ExecutorService that exist.
+   * Then, before continuing, go back and revisit your implementation of fork
+   * and try to find a counterexample or convince yourself that
+   * the law holds for your implementation.
+   *
+   * There's actually a rather subtle problem that
+   * will occur in most implementations of fork.
+   * When using an ExecutorService backed by a thread pool of bounded size
+   * (see Executors.newFixedThreadPool),
+   * it's very easy to run into a deadlock.
+   *
+   * val a = lazyUnit(42 + 1)
+   * val S = Executors.newFixedThreadPool(1)
+   * println(Par.equal(S)(a, fork(a)))
+   */
+
+
+  /**
+   * Executors 7.9 - Hard
+   *
+   * Show that any fixed-size thread pool
+   * can be made to deadlock given this implementation of fork.
+   */
+  // suppose the thread pool size is n,
+  // calculate the n+1 fork function f(f(f...(f(x)))) will cause the deadlock.
+
   // scalastyle:on noimpl
 
   /* Gives us infix syntax for `Par`. */
