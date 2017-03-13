@@ -167,7 +167,23 @@ object Par {
     val pars = as.map(asyncF((a: A) => if (f(a)) List(a) else List()))
     map(sequence(pars))(_.flatten)
   }
+
+  /**
+   * Exercise 7.7 - Hard
+   *
+   * Given map(y)(id) == y,
+   * it's a free theorem that map(map(y)(g))(f) == map(y)(f compose g).
+   *
+   * This is sometimes called map fusion, and it can be used as an optimization
+   * - rather than spawning a separate parallel computation to compute the second mapping,
+   * we can fold it into the first mapping.
+   *
+   * Can you prove it?
+   */
+  // map(y)(f.g) = f.g(y) = f(g(y)) = f(map(y)(g)) = map(map(y)(g))(f)
+
   // scalastyle:on noimpl
+
   /* Gives us infix syntax for `Par`. */
   implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
 
