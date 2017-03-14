@@ -228,12 +228,79 @@ object Par {
   def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = {
     es => {
       val index = run(es)(n).get
-      val choice: Par[A] = choices.take(index + 1).last
+      val choice: Par[A] = choices(index)
       choice(es)
     }
   }
   def choiceViaChoiceN[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = {
     choiceN(Par.map(cond)(if (_) 0 else 1))(List(t, f))
+  }
+
+  /**
+   * Esercise 7.12
+   *
+   * There's still something rather arbitrary about choiceN.
+   * The choice of List seems overly specific.
+   * Why does it matter what sort of container we have?
+   * For instance, what if, instead of a list of computations,
+   * we have a Map of them.
+   */
+  def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] = {
+    es => {
+      val k = run(es)(key).get
+      val choice = choices(k)
+      choice(es)
+    }
+  }
+
+  /**
+   * Exercise 7.13
+   *
+   * Implement this new primitive chooser,
+   * and then use it to implement choice and choiceN.
+   */
+  def chooser[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] = {
+    es => {
+      val a = run(es)(pa).get
+      val choice = choices(a)
+      choice(es)
+    }
+  }
+  def choiceViaChooser[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = {
+    chooser(cond)(bool => if (bool) t else f)
+  }
+  def choiceNViaChooser[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = {
+    chooser(n)(choices(_))
+  }
+  def choiceMapViaChooser[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] = {
+    chooser(key)(k => choices(k))
+  }
+  def flatMap[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] = chooser(pa)(choices)
+
+
+  /**
+   * Exercise 7.14
+   *
+   * Implement join. Can you see how to implement flatMap using join?
+   * And can you implement join using flatMap?
+   */
+  def join[A](a: Par[Par[A]]): Par[A] = {
+    es => {
+      val pa = run(es)(a).get
+      pa(es)
+    }
+  }
+  def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] = {
+    flatMap(a)((x: Par[A]) => x)
+  }
+  def flatMapViaJoin[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] = {
+    join(map(pa)(choices))
+  }
+
+  def map2ViaFlatMap[A, B, C](a: => Par[A], b: => Par[B])(f: (A, B) => C): Par[C] = {
+    flatMap(a)(av => {
+      flatMap(b)(bv => unit(f(av, bv)))
+    })
   }
 
   // scalastyle:on noimpl
