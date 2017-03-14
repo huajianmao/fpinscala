@@ -213,6 +213,29 @@ object Par {
   // suppose the thread pool size is n,
   // calculate the n+1 fork function f(f(f...(f(x)))) will cause the deadlock.
 
+
+  def choice[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = {
+    es =>
+      if (run(es)(cond).get) t(es)
+      else f(es)
+  }
+
+  /**
+   * Exercise 7.11
+   *
+   * Implement choiceN and then choice in terms of choiceN.
+   */
+  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = {
+    es => {
+      val index = run(es)(n).get
+      val choice: Par[A] = choices.take(index + 1).last
+      choice(es)
+    }
+  }
+  def choiceViaChoiceN[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = {
+    choiceN(Par.map(cond)(if (_) 0 else 1))(List(t, f))
+  }
+
   // scalastyle:on noimpl
 
   /* Gives us infix syntax for `Par`. */
