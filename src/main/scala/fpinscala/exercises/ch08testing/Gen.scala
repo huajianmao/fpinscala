@@ -1,5 +1,7 @@
 package fpinscala.exercise.ch08testing
 
+import fpinscala.exercise.ch06state._
+
 /**
  * Exercise 8.1
  *
@@ -26,3 +28,60 @@ package fpinscala.exercise.ch08testing
  */
 // 1. max should larger than all of the elements in the list.
 // 2. max of the reverse list should equals to the max of the original list.
+
+/**
+sealed trait Gen[+A] {
+  def listOf[A](a: Gen[A]): Gen[List[A]]
+  def listOfN[A](n: Int, a: Gen[A]): Gen[List[A]]
+  def forAll[A](a: Gen[A])(f: A => Boolean): Prop
+}
+*/
+case class Gen[+A](sample: State[RNG, A]) {
+
+  /**
+   * Exercise 8.4
+   *
+   * Implement Gen.choose using this representation of Gen.
+   * It should generate integers in the range start to stopExclusive.
+   * Feel free to use functions you’ve already written.
+   */
+  def choose(start: Int, stopExclusive: Int): Gen[Int] = {
+    Gen(State(RNG.nonNegativeInt).map(n =>
+      start + n % (stopExclusive-start)
+    ))
+  }
+
+  def unit[A](a: => A): Gen[A] = Gen(State.unit(a))
+  def boolean: Gen[Boolean] = {
+    Gen(State(RNG.nonNegativeLessThan(2)).map(_ % 2 == 0))
+  }
+  def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = {
+    ???
+  }
+}
+
+trait Prop {
+  import Prop._
+/**
+ * Exercise 8.3
+ *
+ * Assuming the following representation of Prop,
+ * implement && as a method of Prop.
+ *
+ * trait Prop { def check: Boolean }
+ */
+
+/**
+  def check: Boolean
+  def &&(p: Prop): Prop = new Prop {
+    def check = Prop.this.check && p.check
+  }
+*/
+
+  def check[A]: Either[(FailedCase, SuccessCount), SuccessCount]
+}
+
+object Prop {
+  type FailedCase = String
+  type SuccessCount = Int
+}
