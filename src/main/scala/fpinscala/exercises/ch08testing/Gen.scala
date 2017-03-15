@@ -1,6 +1,7 @@
 package fpinscala.exercise.ch08testing
 
 import fpinscala.exercise.ch06state._
+import Prop._
 
 /**
  * Exercise 8.1
@@ -37,6 +38,31 @@ sealed trait Gen[+A] {
 }
 */
 case class Gen[+A](sample: State[RNG, A]) {
+  /**
+   * Exercise 8.6
+   *
+   * Implement flatMap,
+   * and then use it to implement this more dynamic version of listOfN.
+   * Put flatMap and listOfN in the Gen class.
+   */
+  def flatMap[B](f: A => Gen[B]): Gen[B] = {
+    Gen(this.sample.flatMap(f(_).sample))
+  }
+  def map[B](f: A => B): Gen[B] = {
+    Gen(this.sample.map(f(_)))
+  }
+  def map2[B, C](g: Gen[B])(f: (A, B) => C): Gen[C] = {
+    Gen(this.sample.map2(g.sample)(f))
+  }
+  def listOfN(size: Int): Gen[List[A]] = {
+    Gen.listOfN(size, this)
+  }
+  def listOfN(size: Gen[Int]): Gen[List[A]] = {
+    size.flatMap(this.listOfN(_))
+  }
+}
+
+object Gen {
 
   /**
    * Exercise 8.4
@@ -51,17 +77,44 @@ case class Gen[+A](sample: State[RNG, A]) {
     ))
   }
 
-  def unit[A](a: => A): Gen[A] = Gen(State.unit(a))
   def boolean: Gen[Boolean] = {
     Gen(State(RNG.nonNegativeLessThan(2)).map(_ % 2 == 0))
   }
+
+  def unit[A](a: => A): Gen[A] = Gen(State.unit(a))
+
   def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = {
-    ???
+    Gen(State.sequence(List.fill(n)(g.sample)))
+  }
+
+  /**
+   * Exercise 8.7
+   *
+   * Implement union,
+   * for combining two generators of the same type into one,
+   * by pulling values from each generator with equal likelihood.
+   */
+  def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] =
+    boolean.flatMap(bool => if (bool) g1 else g2)
+
+  /**
+   * Exercise 8.8
+   *
+   * Implement weighted,
+   * a version of union that accepts a weight for each Gen
+   * and generates values from each Gen
+   * with probability proportional to its weight.
+   */
+  def weighted[A](g1: (Gen[A], Double), g2: (Gen[A], Double)): Gen[A] = {
+    Gen(State(RNG.double)).flatMap(d => {
+      if (d < g1._2.abs / (g1._2.abs + g2._2.abs)) g1._1
+      else g2._1
+    })
   }
 }
 
-trait Prop {
-  import Prop._
+// trait Prop {
+//   import Prop._
 /**
  * Exercise 8.3
  *
@@ -78,10 +131,28 @@ trait Prop {
   }
 */
 
-  def check[A]: Either[(FailedCase, SuccessCount), SuccessCount]
-}
+//   def check[A]: Either[(FailedCase, SuccessCount), SuccessCount]
+// }
 
+case class Prop(run: (TestCases, RNG) => Result)
 object Prop {
   type FailedCase = String
   type SuccessCount = Int
+  type TestCases = Int
+
+  sealed trait Result {
+    def isFalsified: Boolean
+  }
+  case object Passed extends Result {
+    def isFalsified = false
+  }
+  case class Falsified(failure: FailedCase, successes: SuccessCount) extends Result {
+    def isFalsified = true
+  }
+
+  def forAll[A](a: Gen[A])(f: A => Boolean): Prop = Prop {
+    (testCases, rng) => {
+      ???
+    }
+  }
 }
