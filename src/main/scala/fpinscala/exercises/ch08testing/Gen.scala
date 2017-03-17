@@ -152,7 +152,7 @@ object Gen {
 //   def check[A]: Either[(FailedCase, SuccessCount), SuccessCount]
 // }
 
-case class Prop(run: (TestCases, RNG) => Result) {
+case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
   /**
    * Exercise 8.9
    *
@@ -166,17 +166,17 @@ case class Prop(run: (TestCases, RNG) => Result) {
    * which gets displayed in the event of a failure?
    */
   def &&(p: Prop): Prop = Prop {
-    (n, rng) => {
-      val thisResult = this.run(n, rng)
+    (max, n, rng) => {
+      val thisResult = this.run(max, n, rng)
       if (thisResult.isFalsified) thisResult
-      else p.run(n, rng)
+      else p.run(max, n, rng)
     }
   }
   def ||(p: Prop): Prop = Prop {
-    (n, rng) => {
-    val thisResult = this.run(n, rng)
+    (max, n, rng) => {
+    val thisResult = this.run(max, n, rng)
       if (!thisResult.isFalsified) thisResult
-      else p.run(n, rng)
+      else p.run(max, n, rng)
     }
   }
 }
@@ -207,11 +207,25 @@ object Prop {
   }
 
   def forAll[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
-    (n, rng) => randomStream(as)(rng).zip(Stream.from(0)).take(n).map {
+    (_, n, rng) => randomStream(as)(rng).zip(Stream.from(0)).take(n).map {
       case (a, i) => try {
         if (f(a)) Passed else Falsified(a.toString, i)
       } catch { case e: Exception => Falsified(buildMsg(a, e), i) }
     }.find(_.isFalsified).getOrElse(Passed)
+  }
+
+  def forAll[A](g: Int => Gen[A])(f: A => Boolean): Prop = Prop {
+    (max, n, rng) =>
+      val casesPerSize = (n + (max - 1)) / max
+      val props: Stream[Prop] = Stream.from(0)
+                                      .take((n min max) + 1)
+                                      .map(i => forAll(g(i))(f))
+      props.map(p => Prop { (max, _, rng) => p.run(max, casesPerSize, rng) })
+           .toList
+           .reduce(_ && _).run(max, n, rng)
+  }
+  def forAll[A](g: SGen[A])(f: A => Boolean): Prop = {
+    forAll(n => g(n))(f)
   }
 }
 
