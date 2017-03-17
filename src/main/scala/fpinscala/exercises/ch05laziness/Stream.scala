@@ -163,6 +163,9 @@ sealed trait Stream[+A] {
       }
     })
   }
+  def zip[B](s: Stream[B]): Stream[(Option[A], Option[B])] = {
+    zipAll(s)
+  }
   // FIXME: No test case provided yet.
   def zipAll[B](s: Stream[B]): Stream[(Option[A], Option[B])] = {
     zipWithAll(s)((_, _))

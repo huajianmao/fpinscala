@@ -1,4 +1,4 @@
-package fpinscala.exercise.ch06state;
+package fpinscala.exercises.ch06state;
 
 import org.scalatest.FunSuite
 
