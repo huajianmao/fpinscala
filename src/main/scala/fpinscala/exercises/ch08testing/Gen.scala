@@ -135,20 +135,49 @@ object Gen {
 //   def check[A]: Either[(FailedCase, SuccessCount), SuccessCount]
 // }
 
-case class Prop(run: (TestCases, RNG) => Result)
+case class Prop(run: (TestCases, RNG) => Result) {
+  /**
+   * Exercise 8.9
+   *
+   * Now that we have a representation of Prop,
+   * implement && and || for composing Prop values.
+   * Notice that in the case of failure we don't know
+   * which property was responsible,
+   * the left or the right.
+   * Can you devise a way of handling this,
+   * perhaps by allowing Prop values to be assigned a tag or label
+   * which gets displayed in the event of a failure?
+   */
+  def &&(p: Prop): Prop = Prop {
+    (n, rng) => {
+      val thisResult = this.run(n, rng)
+      if (thisResult.isFalsified) thisResult
+      else p.run(n, rng)
+    }
+  }
+  def ||(p: Prop): Prop = Prop {
+    (n, rng) => {
+    val thisResult = this.run(n, rng)
+      if (!thisResult.isFalsified) thisResult
+      else p.run(n, rng)
+    }
+  }
+}
+
 object Prop {
   type FailedCase = String
   type SuccessCount = Int
+  type MaxSize = Int
   type TestCases = Int
 
   sealed trait Result {
     def isFalsified: Boolean
   }
   case object Passed extends Result {
-    def isFalsified = false
+    def isFalsified: Boolean = false
   }
   case class Falsified(failure: FailedCase, successes: SuccessCount) extends Result {
-    def isFalsified = true
+    def isFalsified: Boolean = true
   }
 
   def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] = {
@@ -159,14 +188,14 @@ object Prop {
     s"generated and exception: ${e.getMessage}\n" +
     s"stack trace:\n ${e.getStackTrace.mkString("\n")}"
   }
+
   def forAll[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
-    /**
     (n, rng) => randomStream(as)(rng).zip(Stream.from(0)).take(n).map {
       case (a, i) => try {
         if (f(a)) Passed else Falsified(a.toString, i)
       } catch { case e: Exception => Falsified(buildMsg(a, e), i) }
     }.find(_.isFalsified).getOrElse(Passed)
-    */
-   ???
   }
 }
+
+case class SGen[+A](g: Int => Gen[A])
