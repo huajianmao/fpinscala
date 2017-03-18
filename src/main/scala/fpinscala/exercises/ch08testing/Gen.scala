@@ -129,6 +129,37 @@ object Gen {
    * The implementation should generate lists of the requested size.
    */
   def listOf[A](g: Gen[A]): SGen[List[A]] = SGen(listOfN(_, g))
+
+  /**
+   * Exercise 8.13
+   *
+   * Define listOf1 for generating nonempty lists,
+   * and then update your specification of max to use this generator.
+   */
+  def listOf1[A](g: Gen[A]): SGen[List[A]] = {
+    SGen(n => g.listOfN(n max 1))
+  }
+  /**
+   * val smallInt = Gen.choose(-10, 10)
+   * val maxProp = forAll(listOf1(smallInt)) { ns =>
+   *   val max = ns.max
+   *   !ns.exists(_ > max)
+   */
+
+  /**
+   * Exercise 8.14
+   *
+   * Write a property to verify the behavior of List.sorted (API docs link: http://mng.bz/ Pz86),
+   * which you can use to sort (among other things) a List[Int].
+   * For instance, List(2,1,3).sorted is equal to List(1,2,3).
+   */
+  /**
+   * val range = Gen.choose(-1000, 1000)
+   * val sortedProp = forAll(listOf1(range)) { ns =>
+   *   val sorted = ns.sorted
+   *   sorted.foldRight((true, Int.MinValue))((n, acc) => ((acc._1 && acc._2 <= n), n))._1
+   * }
+   */
 }
 
 // trait Prop {
@@ -227,6 +258,18 @@ object Prop {
   def forAll[A](g: SGen[A])(f: A => Boolean): Prop = {
     forAll(n => g(n))(f)
   }
+
+  // scalastyle:off println
+  def run(p: Prop,
+    maxSize: Int = 100,
+    testCases: Int = 100,
+    rng: RNG = SimpleRNG(System.currentTimeMillis)): Unit = {
+    p.run(maxSize, testCases, rng) match {
+      case Falsified(msg, n) => println(s"! Falsified after $n passed tests:\n $msg")
+      case Passed => println(s"+ OK, passed $testCases tests.")
+    }
+  }
+  // scalastyle:on println
 }
 
 case class SGen[+A](g: Int => Gen[A]) {
