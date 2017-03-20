@@ -1,6 +1,6 @@
 package fpinscala.exercises.ch07parallelism
 
-import java.util.concurrent._
+import java.util.concurrent.{Executors, ExecutorService}
 
 import fpinscala.exercises.ch07parallelism.Par._
 import org.scalacheck._

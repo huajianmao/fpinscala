@@ -1,8 +1,13 @@
 package fpinscala.exercise.ch08testing
 
+import java.util.concurrent.{Executors, ExecutorService}
+
 import fpinscala.exercises.ch05laziness.Stream
 import fpinscala.exercises.ch06state._
+import Gen._
 import Prop._
+import fpinscala.exercises.ch07parallelism.Par
+import fpinscala.exercises.ch07parallelism.Par.Par
 
 /**
  * Exercise 8.1
@@ -69,6 +74,10 @@ case class Gen[+A](sample: State[RNG, A]) {
    * You can add this as a method on Gen.
    */
   def unsized: SGen[A] = SGen(size => this)
+
+  def **[B](g: Gen[B]): Gen[(A, B)] = {
+    (this map2 g) ((_, _))
+  }
 }
 
 object Gen {
@@ -160,6 +169,24 @@ object Gen {
    *   sorted.foldRight((true, Int.MinValue))((n, acc) => ((acc._1 && acc._2 <= n), n))._1
    * }
    */
+
+  /**
+   * Exercise 8.16 - Hard
+   *
+   * Write a richer generator for Par[Int],
+   * which builds more deeply nested parallel computations
+   * than the simple ones we gave previously.
+   */
+  /**
+   * Copied from
+   * https://github.com/fpinscala/fpinscala/blob
+   *        /master/answers/src/main/scala/fpinscala/testing/Gen.scala#L281
+   */
+  val pint2: Gen[Par[Int]] = {
+    choose(-100, 100).listOfN(choose(0, 20)).map(l =>
+      l.foldLeft(Par.unit(0))((p, i) =>
+        Par.fork { Par.map2(p, Par.unit(i))(_ + _) }))
+  }
 }
 
 // trait Prop {
@@ -205,7 +232,7 @@ case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
   }
   def ||(p: Prop): Prop = Prop {
     (max, n, rng) => {
-    val thisResult = this.run(max, n, rng)
+      val thisResult = this.run(max, n, rng)
       if (!thisResult.isFalsified) thisResult
       else p.run(max, n, rng)
     }
@@ -226,6 +253,9 @@ object Prop {
   }
   case class Falsified(failure: FailedCase, successes: SuccessCount) extends Result {
     def isFalsified: Boolean = true
+  }
+  case object Proved extends Result {
+    def isFalsified: Boolean = false
   }
 
   def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] = {
@@ -267,9 +297,64 @@ object Prop {
     p.run(maxSize, testCases, rng) match {
       case Falsified(msg, n) => println(s"! Falsified after $n passed tests:\n $msg")
       case Passed => println(s"+ OK, passed $testCases tests.")
+      case Proved => println(s"+ OK, proved property.")
     }
   }
   // scalastyle:on println
+  val ES: ExecutorService = Executors.newCachedThreadPool
+  val p1 = Prop.forAll(Gen.unit(Par.unit(1)))(i =>
+    Par.map(i)(_ + 1)(ES).get == Par.unit(2)(ES).get)
+
+  def check(p: => Boolean): Prop = Prop { (_, _, _) =>
+    if (p) Passed else Falsified("()", 0)
+  }
+
+  val p2 = Prop.check {
+    val p = Par.map(Par.unit(1))(_ + 1)
+    val p2 = Par.unit(2)
+    p(ES).get == p2(ES).get
+  }
+
+  def equal[A](p: Par[A], p2: Par[A]): Par[Boolean] = {
+    Par.map2(p, p2)(_ == _)
+  }
+
+  val p3 = check {
+    equal(
+      Par.map(Par.unit(1))(_ + 1),
+      Par.unit(2)
+    )(ES).get
+  }
+
+  val S = weighted(
+    choose(1, 4).map(Executors.newFixedThreadPool) -> .75,
+    unit(Executors.newCachedThreadPool) -> .25
+  )
+
+  def forAllPar[A](g: Gen[A])(f: A => Par[Boolean]): Prop = {
+    forAll(S ** g) { case (s, a) => f(a)(s).get }
+  }
+
+  def checkPar[A](p: Par[Boolean]): Prop = {
+    forAllPar(Gen.unit(()))(_ => p)
+  }
+
+  val p2ViaCheckPar = checkPar {
+    equal (
+      Par.map(Par.unit(1))(_ + 1),
+      Par.unit(2)
+    )
+  }
+
+  val pint: Gen[Par[Int]] = Gen.choose(0, 10) map (Par.unit(_))
+  val p4 = forAllPar(pint)(n => equal(Par.map(n)(y => y), n))
+
+  /**
+   * Exercise 8.17
+   *
+   * Express the property about fork from chapter 7, that fork(x) == x.
+   */
+  val p5 = forAllPar(pint)((n: Par[Int]) => equal(Par.fork(n), n))
 }
 
 case class SGen[+A](g: Int => Gen[A]) {
