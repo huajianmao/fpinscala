@@ -355,6 +355,17 @@ object Prop {
    * Express the property about fork from chapter 7, that fork(x) == x.
    */
   val p5 = forAllPar(pint)((n: Par[Int]) => equal(Par.fork(n), n))
+
+  /**
+   * Exercise 8.18
+   *
+   * Come up with some other properties that takeWhile should satisfy.
+   * Can you think of a good property expressing the relationship
+   * between takeWhile and dropWhile?
+   */
+  val s = List(1, 2, 3)
+  val f = (x: Int) => x > 2
+  val p6 = s.takeWhile(f) ::: s.dropWhile(f) == s
 }
 
 case class SGen[+A](g: Int => Gen[A]) {
