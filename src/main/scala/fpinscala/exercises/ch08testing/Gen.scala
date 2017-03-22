@@ -1,4 +1,4 @@
-package fpinscala.exercise.ch08testing
+package fpinscala.exercises.ch08testing
 
 import java.util.concurrent.{Executors, ExecutorService}
 
