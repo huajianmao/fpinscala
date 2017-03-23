@@ -4,7 +4,7 @@ trait Parsers[ParseError, Parser[+_]] { self =>
   def run[A](p: Parser[A])(input: String): Either[ParseError, A]
   def orString(s1: String, s2: String): Parser[String]
 
-  val numA: Parser[Int] = char('a').many.map(_.size)
+  val numA: Parser[Int] = many(char('a')).map(_.size)
   def char(c: Char): Parser[Char] = string(c.toString).map(_.charAt(0))
   def succeed[A](a: A): Parser[A] = string("").map(_ => a)
 
@@ -17,9 +17,18 @@ trait Parsers[ParseError, Parser[+_]] { self =>
    * and defined product in terms of map2 as we've done in previous chapters.
    * The choice is up to you.
    */
-  def many1[A](p: Parser[A]): Parser[List[A]] = map2(p, p.many)(_ :: _)
+  def many1[A](p: Parser[A]): Parser[List[A]] = map2(p, many(p))(_ :: _)
   def map2[A, B, C](p: Parser[A], p2: Parser[B])(f: (A, B) => C): Parser[C] = {
     p.product(p2).map(pair => f(pair._1, pair._2))
+  }
+
+  /**
+   * Exercise 9.3 - Hard
+   *
+   * Before continuing, see if you can define many in terms of or, map2, and succeed.
+   */
+  def many[A](p: Parser[A]): Parser[List[A]] = {
+    map2(p, many(p))(_ :: _) or self.succeed(Nil: List[A])
   }
   // char('a').many.slice.map(_.size) ** char('b').many1.slice.map(_size)
 
@@ -33,7 +42,6 @@ trait Parsers[ParseError, Parser[+_]] { self =>
     def |[B>:A](p2: Parser[B]): Parser[B] = self.or(p, p2)
     def or[B>:A](p2: => Parser[B]): Parser[B] = self.or(p, p2)
 
-    def many: Parser[List[A]] = ???
     def map[B](f: A => B): Parser[B] = ???
     def slice: Parser[String] = ???
 
