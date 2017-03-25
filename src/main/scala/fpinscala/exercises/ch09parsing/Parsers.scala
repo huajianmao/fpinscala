@@ -2,12 +2,17 @@ package fpinscala.exercises.ch09parsing
 
 import scala.util.matching.Regex
 
-trait Parsers[ParseError, Parser[+_]] { self =>
+trait Parsers[Parser[+_]] { self =>
   def run[A](p: Parser[A])(input: String): Either[ParseError, A]
 
+  def succeed[A](a: A): Parser[A]
+  def or[A](s1: Parser[A], s2: Parser[A]): Parser[A]
+  def flatMap[A, B](p: Parser[A])(f: A => Parser[B]): Parser[B]
   implicit def string(s: String): Parser[String]
+  implicit def regex(r: Regex): Parser[String]
   def slice[A]: Parser[String]
-  def succeed[A](a: A): Parser[A] = string("").map(_ => a)
+
+  def defaultSucceed[A](a: A): Parser[A] = string("") map (_ => a)
   /**
    * Exercise 9.7
    *
@@ -19,9 +24,6 @@ trait Parsers[ParseError, Parser[+_]] { self =>
   def map2ViaFlatMap[A, B, C](p: Parser[A], p2: => Parser[B])(f: (A, B) => C): Parser[C] = {
     flatMap(p)(a => map(p2)(f(a, _)))
   }
-
-  def or[A](s1: Parser[A], s2: Parser[A]): Parser[A]
-  def flatMap[A, B](p: Parser[A])(f: A => Parser[B]): Parser[B]
   /**
    * Exercise 9.6
    *
@@ -34,7 +36,6 @@ trait Parsers[ParseError, Parser[+_]] { self =>
    * for instance, "[a-zA-Z_][a-zA-Z0-9_]*".r.
    * implicit def regex(r: Regex): Parser[String]
    */
-  implicit def regex(r: Regex): Parser[String]
 
   /**
    * Exercise 9.8
@@ -68,8 +69,8 @@ trait Parsers[ParseError, Parser[+_]] { self =>
    * Before continuing, see if you can define many in terms of or, map2, and succeed.
    */
   def many[A](p: Parser[A]): Parser[List[A]] = {
-    // map2(p, many(p))(_ :: _) or self.succeed(Nil: List[A])
-    map2(p, wrap(many(p)))(_ :: _) or self.succeed(Nil: List[A])
+    map2(p, many(p))(_ :: _) or self.succeed(Nil: List[A])
+    // map2(p, wrap(many(p)))(_ :: _) or self.succeed(Nil: List[A])
   }
 
   /**
@@ -80,7 +81,7 @@ trait Parsers[ParseError, Parser[+_]] { self =>
    * Try this here and make the necessary changes to your existing combinators.
    * What do you think of that approach in this instance?
    */
-  def wrap[A](p: => Parser[A]): Parser[A]
+  // def wrap[A](p: => Parser[A]): Parser[A]
 
 
   // char('a').many.slice.map(_.size) ** char('b').many1.slice.map(_size)
@@ -139,4 +140,16 @@ trait Parsers[ParseError, Parser[+_]] { self =>
       equal((a ** b).map(pair => (f(pair._1), g(pair._2))), a.map(f) ** b.map(g))(in)
     }
   }
+}
+
+case class Location(input: String, offset: Int = 0) {
+  ???
+}
+
+case class ParseError(stack: List[(Location, String)] = List()) {
+  ???
+}
+
+object Parsers {
+
 }
