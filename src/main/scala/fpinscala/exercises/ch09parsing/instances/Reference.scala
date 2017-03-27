@@ -125,7 +125,7 @@ object Reference extends Parsers[Parser] {
     val buf = new collection.mutable.ListBuffer[A]
     def go(p: Parser[A], offset: Int): Result[List[A]] = {
       p(state.advanceBy(offset)) match {
-        case Success(a, n) => buf += a; go(p, offset + 1)
+        case Success(a, n) => buf += a; go(p, offset + n)
         case f@Failure(e, true) => f
         case Failure(e, _) => Success(buf.toList, offset)
       }
