@@ -47,7 +47,7 @@ object ReferenceTypes {
   def firstNonMatchingIndex(s1: String, s2: String, offset: Int): Int = {
     var i = 0
     while (i < s1.length && i < s2.length) {
-      if (s1.charAt(i + offset) != s2.length) return i
+      if (s1.charAt(i + offset) != s2.charAt(i)) return i
       i += 1
     }
     if (s1.length - offset >= s2.length) -1

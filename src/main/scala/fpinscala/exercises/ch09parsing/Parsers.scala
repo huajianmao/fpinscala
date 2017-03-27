@@ -48,7 +48,7 @@ trait Parsers[Parser[+_]] { self =>
    * Express it in terms of flatMap and/or other combinators.
    */
   def map[A, B](p: Parser[A])(f: A => B): Parser[B] = {
-    flatMap(p)(a => succeed(f(a)))
+    flatMap(p)(f andThen succeed)
   }
   def orString(s1: String, s2: String): Parser[String] = or(succeed(s1), succeed(s2))
   val numA: Parser[Int] = many(char('a')).map(_.size)
@@ -63,7 +63,7 @@ trait Parsers[Parser[+_]] { self =>
   def skipL[B](p: Parser[Any], p2: => Parser[B]): Parser[B] = {
     map2(slice(p), p2)((_, b) => b)
   }
-  def skipR[A](p: Parser[A], p2: Parser[Any]): Parser[A] = {
+  def skipR[A](p: Parser[A], p2: => Parser[Any]): Parser[A] = {
     map2(p, slice(p2))((a, _) => a)
   }
   /**
@@ -77,7 +77,8 @@ trait Parsers[Parser[+_]] { self =>
    */
   def many1[A](p: Parser[A]): Parser[List[A]] = map2(p, many(p))(_ :: _)
   def map2[A, B, C](p: Parser[A], p2: => Parser[B])(f: (A, B) => C): Parser[C] = {
-    p.product(p2).map(pair => f(pair._1, pair._2))
+    for { a <- p; b <- p2 } yield f(a, b)
+    // p.product(p2).map(pair => f(pair._1, pair._2))
   }
 
   /**
@@ -123,7 +124,7 @@ trait Parsers[Parser[+_]] { self =>
   def double: Parser[Double] = doubleString map (_.toDouble) label "double literal"
 
   def thru(s: String): Parser[String] = (".*?" + Pattern.quote(s)).r
-  def quoted: Parser[String] = string("\n") *> thru("\"").map(_.dropRight(1))
+  def quoted: Parser[String] = string("\"") *> thru("\"").map(_.dropRight(1))
 
   def escapedQuoted: Parser[String] = {
     token(quoted label "string literal")
@@ -177,7 +178,7 @@ trait Parsers[Parser[+_]] { self =>
     def sep(separator: Parser[Any]): Parser[List[A]] = self.sep(p, separator)
     def sep1(separator: Parser[Any]): Parser[List[A]] = self.sep1(p, separator)
     def as[B](b: B): Parser[B] = self.map(self.slice(p))(_ => b)
-    def opL[A](p: Parser[A])(op: Parser[(A, A) => A]): Parser[A] = self.opL(p)(op)
+    def opL(op: Parser[(A, A) => A]): Parser[A] = self.opL(p)(op)
   }
 
   import fpinscala.exercises.ch08testing._
@@ -230,7 +231,7 @@ case class Location(input: String, offset: Int = 0) {
 }
 
 case class ParseError(stack: List[(Location, String)] = List()) {
-  def push(loc: Location, msg: String): ParseError = copy(stack = ((loc, msg) :: stack))
+  def push(loc: Location, msg: String): ParseError = copy(stack = (loc, msg) :: stack)
   def label[A](s: String): ParseError = ParseError(latestLoc.map((_, s)).toList)
   def latest: Option[(Location, String)] = stack.lastOption
   def latestLoc: Option[Location] = latest.map(_._1)
