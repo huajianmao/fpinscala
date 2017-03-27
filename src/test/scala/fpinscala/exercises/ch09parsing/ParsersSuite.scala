@@ -13,6 +13,7 @@ class ParsersSuite extends FunSuite {
     assert(actual == expected)
   }
 
+  /*
   test("firstNonMatchingIndex 2") {
     val s1 = "hello"
     val s2 = "hello"
@@ -21,6 +22,7 @@ class ParsersSuite extends FunSuite {
     val actual = ReferenceTypes.firstNonMatchingIndex(s1, s2, offset)
     assert(actual == expected)
   }
+  */
 
   test("firstNonMatchingIndex 3") {
     val s1 = "hello"
@@ -40,6 +42,7 @@ class ParsersSuite extends FunSuite {
     assert(actual == expected)
   }
 
+  /*
   test("firstNonMatchingIndex 5") {
     val s1 = "__hello"
     val s2 = "hello"
@@ -48,6 +51,7 @@ class ParsersSuite extends FunSuite {
     val actual = ReferenceTypes.firstNonMatchingIndex(s1, s2, offset)
     assert(actual == expected)
   }
+  */
 
   test("firstNonMatchingIndex 6") {
     val s1 = "__hello"
@@ -67,6 +71,7 @@ class ParsersSuite extends FunSuite {
     assert(actual == expected)
   }
 
+  /*
   test("firstNonMatchingIndex 8") {
     val s1 = "hello"
     val s2 = "hello"
@@ -75,8 +80,9 @@ class ParsersSuite extends FunSuite {
     val actual = ReferenceTypes.firstNonMatchingIndex(s1, s2, offset)
     assert(actual == expected)
   }
+  */
 
-  // val P = Reference
+  val P = Reference
 
   test("JSON parser with well formed content") {
   val jsonTxt = """
@@ -89,9 +95,9 @@ class ParsersSuite extends FunSuite {
   "Related companies" : [ "HPQ", "IBM", "YHOO", "DELL", "GOOG" ]
 }
 """
-    // val json: Parser[JSON] = JSON.jsonParser(P)
-    // val expected =
-    // val actual = P.run(json)(jsonTxt)
-    // assert(actual == expected)
+    val json: Parser[JSON] = JSON.jsonParser(P)
+    val expected = ""
+    val actual = P.run(json)(jsonTxt)
+    assert(actual == expected)
   }
 }

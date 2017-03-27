@@ -20,8 +20,18 @@ object ReferenceTypes {
       case Success(a, _) => Right(a)
     }
 
+    def uncommit: Result[A] = this match {
+      case Failure(e, true) => Failure(e, false)
+      case _ => this
+    }
+
     def addCommit(isCommitted: Boolean): Result[A] = this match {
       case Failure(e, c) => Failure(e, c || isCommitted)
+      case _ => this
+    }
+
+    def mapError(f: ParseError => ParseError): Result[A] = this match {
+      case Failure(e, c) => Failure(f(e), c)
       case _ => this
     }
 
@@ -35,6 +45,15 @@ object ReferenceTypes {
   case class Failure(get: ParseError, isCommitted: Boolean) extends Result[Nothing]
 
   def firstNonMatchingIndex(s1: String, s2: String, offset: Int): Int = {
+    var i = 0
+    while (i < s1.length && i < s2.length) {
+      if (s1.charAt(i + offset) != s2.length) return i
+      i += 1
+    }
+    if (s1.length - offset >= s2.length) -1
+    else s1.length - offset
+  }
+  def firstNonMatchingIndex1(s1: String, s2: String, offset: Int): Int = {
     def loop(idx: Int): Int = {
       val s1Idx = idx + offset
       val s2Idx = idx
@@ -83,10 +102,34 @@ object Reference extends Parsers[Parser] {
       case Some(m) => Success(m, m.length)
     }
   }
+  def label[A](msg: String)(p: Parser[A]): Parser[A] = {
+    s => p(s).mapError(_.label(msg))
+  }
+  def scope[A](msg: String)(p: Parser[A]): Parser[A] = {
+    s => p(s).mapError(_.push(s.loc, msg))
+  }
+
+  def attempt[A](p: Parser[A]): Parser[A] = {
+    s => p(s).uncommit
+  }
+
   def slice[A](p: Parser[A]): Parser[String] = state => {
     p(state) match {
       case Success(_, n) => Success(state.slice(n), n)
       case f@Failure(_, _) => f
     }
+  }
+
+  override def many[A](p: Parser[A]): Parser[List[A]] = state => {
+    var nConsumed: Int = 0
+    val buf = new collection.mutable.ListBuffer[A]
+    def go(p: Parser[A], offset: Int): Result[List[A]] = {
+      p(state.advanceBy(offset)) match {
+        case Success(a, n) => buf += a; go(p, offset + 1)
+        case f@Failure(e, true) => f
+        case Failure(e, _) => Success(buf.toList, offset)
+      }
+    }
+    go(p, 0)
   }
 }

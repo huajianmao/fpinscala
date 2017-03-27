@@ -34,7 +34,29 @@ object JSON {
 
   def jsonParser[Parser[+_]](P: Parsers[Parser]): Parser[JSON] = {
     import P.{string => _, _}
-    // implicit def tok(s: String) = token(P.string(s))
-    ???
+    implicit def tok(s: String) = token(P.string(s))
+
+    def keyval = escapedQuoted ** (":" *> value)
+
+    def array: Parser[JSON] = surround("[", "]")(
+      value sep "," map (vs => JArray(vs.toIndexedSeq))
+    ) scope "array"
+
+    def obj: Parser[JSON] = surround("{", "}")(
+      keyval sep "," map (kvs => JObject(kvs.toMap))
+    ) scope "object"
+
+    def lit: Parser[JSON] = scope("literal") {
+      "null".as(JNull) |
+      double.map(JNumber(_)) |
+      escapedQuoted.map(JString(_)) |
+      "true".as(JBool(true)) |
+      "false". as(JBool(false))
+    }
+
+    def value: Parser[JSON] = lit | obj | array
+
+    root(whitespace *> (obj | array))
   }
 }
+
