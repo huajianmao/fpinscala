@@ -44,7 +44,7 @@ object ReferenceTypes {
   case class Success[+A](get: A, length: Int) extends Result[A]
   case class Failure(get: ParseError, isCommitted: Boolean) extends Result[Nothing]
 
-  def firstNonMatchingIndex(s1: String, s2: String, offset: Int): Int = {
+  def firstNonMatchingIndex1(s1: String, s2: String, offset: Int): Int = {
     var i = 0
     while (i < s1.length && i < s2.length) {
       if (s1.charAt(i + offset) != s2.charAt(i)) return i
@@ -53,7 +53,7 @@ object ReferenceTypes {
     if (s1.length - offset >= s2.length) -1
     else s1.length - offset
   }
-  def firstNonMatchingIndex1(s1: String, s2: String, offset: Int): Int = {
+  def firstNonMatchingIndex(s1: String, s2: String, offset: Int): Int = {
     def loop(idx: Int): Int = {
       val s1Idx = idx + offset
       val s2Idx = idx
