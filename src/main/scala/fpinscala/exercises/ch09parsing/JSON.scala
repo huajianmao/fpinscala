@@ -1,6 +1,5 @@
 package fpinscala.exercises.ch09parsing
 
-
 /**
  * Exercise 9.9 - Hard
  *
@@ -33,7 +32,9 @@ object JSON {
   case class JArray(get: IndexedSeq[JSON]) extends JSON
   case class JObject(get: Map[String, JSON]) extends JSON
 
-  def jsonParser[Parser[+_]](p: Parsers[Parser]): Parser[JSON] = {
+  def jsonParser[Parser[+_]](P: Parsers[Parser]): Parser[JSON] = {
+    import P.{string => _, _}
+    // implicit def tok(s: String) = token(P.string(s))
     ???
   }
 }

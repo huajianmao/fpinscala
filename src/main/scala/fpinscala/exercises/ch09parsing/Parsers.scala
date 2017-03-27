@@ -10,7 +10,7 @@ trait Parsers[Parser[+_]] { self =>
   def flatMap[A, B](p: Parser[A])(f: A => Parser[B]): Parser[B]
   implicit def string(s: String): Parser[String]
   implicit def regex(r: Regex): Parser[String]
-  def slice[A]: Parser[String]
+  def slice[A](p: Parser[A]): Parser[String]
 
   def defaultSucceed[A](a: A): Parser[A] = string("") map (_ => a)
   /**
@@ -101,7 +101,7 @@ trait Parsers[Parser[+_]] { self =>
     ParserOps(f(a))
 
   case class ParserOps[A](p: Parser[A]) {
-    def slice: Parser[String] = self.slice
+    def slice: Parser[String] = self.slice(p)
     def map[B](f: A => B): Parser[B] = self.map(p)(f)
     def product[B](p2: => Parser[B]): Parser[(A, B)] = self.product(p, p2)
     def or[B>:A](p2: => Parser[B]): Parser[B] = self.or(p, p2)
