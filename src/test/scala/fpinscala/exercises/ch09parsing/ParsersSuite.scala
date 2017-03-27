@@ -120,5 +120,24 @@ class ParsersSuite extends FunSuite {
     val actual = P.run(json)(malformedJson1)
 
     assert(actual.isLeft == expected)
+    assert(actual.left.get.stack.length == 2)
+    assert(actual.left.get.stack(1)._1.offset == malformedJson1.indexOf(';'))
+  }
+
+  test("JSON parser with well malformedJson2") {
+    val malformedJson2 = """
+[
+  [ "HPQ", "IBM",
+  "YHOO", "DELL" ++
+  "GOOG"
+  ]
+]
+"""
+    val expected = true
+    val actual = P.run(json)(malformedJson2)
+
+    assert(actual.isLeft == expected)
+    assert(actual.left.get.stack.length == 3)
+    assert(actual.left.get.stack(2)._1.offset == malformedJson2.indexOf("++"))
   }
 }
