@@ -47,6 +47,19 @@ object Monoid {
   }
 
   /**
+   * Exercise 10.2
+   *
+   * Give a Monoid instance for combining Option values.
+   */
+  def optionMonoid[A]: Monoid[Option[A]] = new Monoid[Option[A]] {
+    def op(a1: Option[A], a2: Option[A]) = a1 match {
+      case Some(b) => a1
+      case _ => a2
+    }
+    def zero: Option[A] = None
+  }
+
+  /**
    * Exercise 10.3
    *
    * A function having the same argument and return type
@@ -56,6 +69,11 @@ object Monoid {
   def endoMonoid[A]: Monoid[A => A] = new Monoid[A => A] {
     def op(f: A => A, g: A => A) = f compose g
     def zero: A => A = identity
+  }
+
+  def dual[A](m: Monoid[A]): Monoid[A] = new Monoid[A] {
+    def op(x: A, y: A): A = m.op(y, x)
+    val zero = m.zero
   }
 
   /**
@@ -75,4 +93,30 @@ object Monoid {
     m.op(v2, m.zero) == v2 &&
     m.op(v3, m.zero) == v3
   })
+
+  /**
+   * Exercise 10.5
+   *
+   * Implement foldMap.
+   */
+  def foldMap[A, B](as: List[A], m: Monoid[B])(f: A => B): B = {
+    as.map(f).foldLeft(m.zero)(m.op)
+  }
+
+  /**
+   * Exercise 10.6 - Hard
+   *
+   * The foldMap function can be implemented using either foldLeft or foldRight.
+   * But you can also write foldLeft and foldRight using foldMap! Try it.
+   */
+  /**
+   * Copied from
+   * @URL fpinscala/fpinscala/blob/master/answers/src/main/scala/fpinscala/monoids/Monoid.scala#L98
+   */
+  def foldRightViaFoldMap[A, B](as: List[A])(z: B)(f: (A, B) => B): B = {
+    foldMap(as, endoMonoid[B])(a => {b => f(a, b)})(z)
+  }
+  def foldLeftViaFoldMap[A, B](as: List[A])(z: B)(f: (B, A) => B): B = {
+    foldMap(as, dual(endoMonoid[B]))(a => {b => f(b, a)})(z)
+  }
 }

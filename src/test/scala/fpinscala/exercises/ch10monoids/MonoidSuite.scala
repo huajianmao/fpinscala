@@ -67,9 +67,36 @@ object MonoidTest extends Properties("Monoid") {
     }
   }
 
+  property("optionMonoid laws should hold") = forAll {
+    (a1: Option[Int], a2: Option[Int], a3: Option[Int]) => {
+      optionMonoid.op(optionMonoid.op(a1, a2), a3) ==
+        optionMonoid.op(a1, optionMonoid.op(a2, a3)) &&
+      optionMonoid.op(a1, optionMonoid.zero) == a1 &&
+      optionMonoid.op(a2, optionMonoid.zero) == a2 &&
+      optionMonoid.op(a3, optionMonoid.zero) == a3
+    }
+  }
+
   /**
   property("monoidLaws should hold for the monoids") = check {
     monoidLaws(stringMonoid, Gen.alphaStr)
   }
   */
+
+  property("foldMap") = forAll {
+    list: List[Int] => {
+      foldMap(list, stringMonoid)(_.toString) == list.map(_.toString).mkString("")
+    }
+  }
+
+  property("foldLeftViaFoldMap") = forAll {
+    list: List[String] => {
+      foldLeftViaFoldMap(list)("start")(_ + _) == list.foldLeft("start")(_ + _)
+    }
+  }
+  property("foldRightViaFoldMap") = forAll {
+    list: List[String] => {
+      foldRightViaFoldMap(list)("end")(_ + _) == list.foldRight("end")(_ + _)
+    }
+  }
 }
