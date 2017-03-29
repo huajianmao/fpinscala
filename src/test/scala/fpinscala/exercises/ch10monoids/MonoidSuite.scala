@@ -99,4 +99,10 @@ object MonoidTest extends Properties("Monoid") {
       foldRightViaFoldMap(list)("end")(_ + _) == list.foldRight("end")(_ + _)
     }
   }
+
+  property("isIndexedSeqInOrder") = forAll {
+    v: IndexedSeq[Int] => {
+      isIndexedSeqInOrder(v.sorted)
+    }
+  }
 }

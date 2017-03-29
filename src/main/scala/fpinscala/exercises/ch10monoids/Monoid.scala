@@ -119,4 +119,60 @@ object Monoid {
   def foldLeftViaFoldMap[A, B](as: List[A])(z: B)(f: (B, A) => B): B = {
     foldMap(as, dual(endoMonoid[B]))(a => {b => f(b, a)})(z)
   }
+
+  /**
+   * Exercise 10.7
+   *
+   * Implement a foldMap for IndexedSeq.
+   * Your implementation should use the strategy of splitting the sequence in two,
+   * recursively processing each half,
+   * and then adding the answers together with the monoid.
+   */
+  def foldMapV[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): B = {
+    if (v.length == 0) m.zero
+    else {
+      val middle = (0 + v.length) / 2
+      m.op(foldMapV(v.slice(0, middle), m)(f), foldMapV(v.slice(middle, v.length), m)(f))
+    }
+  }
+
+  /**
+   * Exercise 10.8 - Hard
+   *
+   * Also implement a parallel version of foldMap using the library we developed in chapter 7.
+   *
+   * Hint: Implement par, a combinator to promote Monoid[A] to a Monoid[Par[A]],
+   * and then use this to implement parFoldMap.
+   */
+  import fpinscala.exercises.ch07parallelism.Par._
+  def par[A](m: Monoid[A]): Monoid[Par[A]] = new Monoid[Par[A]] {
+    def op(a1: Par[A], a2: Par[A]): Par[A] = es => {
+      unit(m.op(a1(es).get, a2(es).get))(es)
+    }
+    def zero: Par[A] = unit(m.zero)
+  }
+  def parFoldMap[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = {
+    val parM: Monoid[Par[B]] = par(m)
+    if (v.length == 0) parM.zero
+    else {
+      val middle = (0 + v.length) / 2
+      parM.op(parFoldMap(v.slice(0, middle), m)(f),
+              parFoldMap(v.slice(middle, v.length), m)(f)
+      )
+    }
+  }
+
+  /**
+   * Exercise 10.9 - Hard
+   *
+   * Use foldMap to detect whether a given IndexedSeq[Int] is ordered. You'll need
+   * to come up with a creative Monoid.
+   */
+  def isIndexedSeqInOrder(v: IndexedSeq[Int]): Boolean = {
+    if (v.length == 0) true
+    else {
+      val pairList = v.zipAll(v.tail, Int.MinValue, Int.MaxValue)
+      foldMap(pairList.toList, booleanAnd)(pair => pair._1 <= pair._2)
+    }
+  }
 }
