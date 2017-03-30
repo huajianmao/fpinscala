@@ -175,4 +175,49 @@ object Monoid {
       foldMap(pairList.toList, booleanAnd)(pair => pair._1 <= pair._2)
     }
   }
+
+  sealed trait WC
+  case class Stub(chars: String) extends WC
+  case class Part(lStub: String, words: Int, rStub: String) extends WC
+
+  /**
+   * Exercise 10.10
+   *
+   * Write a monoid instance for WC and make sure that it meets the monoid laws.
+   */
+  val wcMonoid: Monoid[WC] = new Monoid[WC] {
+    def op(w1: WC, w2: WC): WC = (w1, w2) match {
+      case (Stub(a), Stub(b)) => Stub(a + b)
+      case (Stub(a), Part(l2, n2, r2)) => Part(a + l2, n2, r2)
+      case (Part(l1, n1, r1), Stub(b)) => Part(l1, n1, r1 + b)
+      case (Part(l1, n1, r1), Part(l2, n2, r2)) =>
+        Part(l1,
+             n1 + n2 + (if ((r1 + l2).isEmpty) 0 else 1),
+             r2)
+    }
+    def zero: WC = Stub("")
+  }
+
+  /**
+   * Exercise 10.11
+   *
+   * Use the WC monoid to implement a function that counts words in a String
+   * by recursively splitting it into substrings
+   * and counting the words in those substrings.
+   *
+   * Copied from
+   * @URL fpinscala/fpinscala/blob/master/answers/src/main/scala/fpinscala/monoids/Monoid.scala
+   */
+  def count(s: String): Int = {
+    def wc(c: Char): WC =
+      if (c.isWhitespace) Part("", 0, "")
+      else Stub(c.toString)
+
+    def unstub(s: String) = s.length min 1
+
+    foldMapV(s.toIndexedSeq, wcMonoid)(wc) match {
+      case Stub(s) => unstub(s)
+      case Part(l, w, r) => unstub(l) + w + unstub(r)
+    }
+  }
 }

@@ -105,4 +105,19 @@ object MonoidTest extends Properties("Monoid") {
       isIndexedSeqInOrder(v.sorted)
     }
   }
+
+  property("wcMonoid laws should hold") = forAll {
+    (l1: String, n1: Int, r1: String,
+     l2: String, n2: Int, r2: String,
+     l3: String, r3: String) => {
+      val p1 = Part(l1, n1, r1)
+      val p2 = Part(l2, n2, r2)
+      val p3 = Part(l3, n2, r3)
+      wcMonoid.op(wcMonoid.op(p1, p2), p3) ==
+        wcMonoid.op(p1, wcMonoid.op(p2, p3)) &&
+      wcMonoid.op(p1, wcMonoid.zero) == p1 &&
+      wcMonoid.op(p2, wcMonoid.zero) == p2 &&
+      wcMonoid.op(p3, wcMonoid.zero) == p3
+    }
+  }
 }
