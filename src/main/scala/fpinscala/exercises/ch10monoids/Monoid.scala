@@ -234,6 +234,13 @@ trait Foldable[F[_]] {
     foldRight(as)(mb.zero)((a, b) => mb.op(f(a), b))
   }
   def concatenate[A](as: F[A])(m: Monoid[A]): A = foldLeft(as)(m.zero)(m.op)
+
+  /**
+   * Exercise 10.15
+   *
+   * Any Foldable structure can be turned into a List.
+   * Write this conversion in a generic way
+   */
   def toList[A](as: F[A]): List[A] = {
     foldRight(as)(List[A]())(_::_)
   }
@@ -296,5 +303,25 @@ object TreeFoldable extends Foldable[Tree] {
   override def foldLeft[A, B](as: Tree[A])(z: B)(f: (B, A) => B): B = as match {
     case Leaf(a) => f(z, a)
     case Branch(l, r) => foldLeft(r)(foldLeft(l)(z)(f))(f)
+  }
+}
+
+/**
+ * Exercise 10.14
+ *
+ * Write a Foldable[Option] instance.
+ */
+object OptionFoldable extends Foldable[Option] {
+  override def foldMap[A, B](as: Option[A])(f: A => B)(mb: Monoid[B]): B = as match {
+    case Some(a) => mb.op(f(a), mb.zero)
+    case None => mb.zero
+  }
+  override def foldRight[A, B](as: Option[A])(z: B)(f: (A, B) => B): B = as match {
+    case Some(a) => f(a, z)
+    case None => z
+  }
+  override def foldLeft[A, B](as: Option[A])(z: B)(f: (B, A) => B): B = as match {
+    case Some(a) => f(z, a)
+    case None => z
   }
 }
