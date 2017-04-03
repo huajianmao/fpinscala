@@ -77,6 +77,30 @@ object Monoid {
   }
 
   /**
+   * Exercise 10.16
+   *
+   * Prove it.
+   * Notice that your implementation of op is obviously associative
+   * so long as A.op and B.op are both associative.
+   */
+  def productMonoid[A, B](A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] = new Monoid[(A, B)] {
+    def op(ab1: (A, B), ab2: (A, B)): (A, B) = (A.op(ab1._1, ab2._1), B.op(ab1._2, ab2._2))
+    def zero = (A.zero, B.zero)
+  }
+  def productAssociate[A, B](v1: (A, B), v2: (A, B), v3: (A, B),
+    am: Monoid[A], bm: Monoid[B]): Boolean = {
+    val m = productMonoid(am, bm)
+    m.op(v1, m.op(v2, v3)) == m.op(v1, (am.op(v2._1, v3._1), bm.op(v2._2, v3._2))) &&
+    m.op(v1, (am.op(v2._1, v3._1), bm.op(v2._2, v3._2))) ==
+      (am.op(v1._1, am.op(v2._1, v3._1)), bm.op(v1._2, bm.op(v2._2, v3._2))) &&
+    (am.op(v1._1, am.op(v2._1, v3._1)), bm.op(v1._2, bm.op(v2._2, v3._2))) ==
+      (am.op(am.op(v1._1, v2._1), v3._1), bm.op(bm.op(v1._2, v2._2), v3._2)) &&
+    m.op(m.op(v1, v2), v3) == m.op((am.op(v1._1, v2._1), bm.op(v1._2, v2._2)), v3) &&
+    m.op((am.op(v1._1, v2._1), bm.op(v1._2, v2._2)), v3) ==
+      (am.op(am.op(v1._1, v2._1), v3._1), bm.op(bm.op(v1._2, v2._2), v3._2)) &&
+    m.op(v1, m.op(v2, v3)) == m.op(m.op(v1, v2), v3)
+  }
+  /**
    * Exercise 10.4
    *
    * Use the property-based testing framework we developed in part 2

@@ -120,4 +120,16 @@ object MonoidTest extends Properties("Monoid") {
       wcMonoid.op(p3, wcMonoid.zero) == p3
     }
   }
+  property("product associate should hold") = forAll {
+    (s1: String, n1: Int,
+     s2: String, n2: Int,
+     s3: String, n3: Int) => {
+      val v1 = (s1, n1)
+      val v2 = (s2, n2)
+      val v3 = (s3, n3)
+      val am = stringMonoid
+      val bm = intAddition
+      productAssociate(v1, v2, v3, am, bm)
+    }
+  }
 }
