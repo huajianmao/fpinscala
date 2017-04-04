@@ -100,6 +100,52 @@ object Monoid {
       (am.op(am.op(v1._1, v2._1), v3._1), bm.op(bm.op(v1._2, v2._2), v3._2)) &&
     m.op(v1, m.op(v2, v3)) == m.op(m.op(v1, v2), v3)
   }
+
+  def mapMergeMonoid[K, V](V: Monoid[V]): Monoid[Map[K, V]] = new Monoid[Map[K, V]] {
+    def op(a: Map[K, V], b: Map[K, V]): Map[K, V] = {
+      (a.keySet ++ b.keySet).foldLeft(zero) {(acc, k) =>
+        acc.updated(k, V.op(a.getOrElse(k, V.zero), b.getOrElse(k, V.zero)))
+      }
+    }
+    def zero: Map[K, V] = Map[K, V]()
+  }
+
+  def M: Monoid[Map[String, Map[String, Int]]] = mapMergeMonoid(mapMergeMonoid(intAddition))
+  val m1 = Map("o1" -> Map("i1" -> 1, "i2" -> 2))
+  val m2 = Map("o1" -> Map("i2" -> 3))
+  val m3 = M.op(m1, m2)
+
+  /**
+   * Exercise 10.17
+   *
+   * Write a monoid instance for functions whose results are monoids.
+   */
+  def functionMonoid[A, B](B: Monoid[B]): Monoid[A => B] = new Monoid[A => B] {
+    def op(a1: A => B, a2: A => B): A => B = a => B.op(a1(a), a2(a))
+    def zero: A => B = a => B.zero
+  }
+
+  /**
+   * Exercise 10.18
+   *
+   * A bag is like a set,
+   * except that it's represented by a map
+   * that contains one entry per element with that element as the key,
+   * and the value under that key is the number of
+   * times the element appears in the bag.
+   *
+   * scala> bag(Vector("a", "rose", "is", "a", "rose"))
+   * res0: Map[String, Int] = Map(a -> 2, rose -> 2, is -> 1)
+   *
+   * Use monoids to compute a "bag" from an IndexedSeq.
+   */
+  def bag[A](as: IndexedSeq[A]): Map[A, Int] = {
+    as.map(a => (a, 1))
+      .foldLeft(Map[A, Int]())(
+        (acc, a1) => mapMergeMonoid(intAddition).op(acc, Map(a1._1 -> a1._2))
+      )
+  }
+
   /**
    * Exercise 10.4
    *
