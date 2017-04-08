@@ -52,6 +52,32 @@ trait Monad[F[_]] {
   def replicateM[A](n: Int, ma: F[A]): F[List[A]] = {
     sequence(List.fill(n)(ma))
   }
+
+  /**
+   * Exercise 11.5
+   *
+   * Think about how replicateM will behave for various choices of F.
+   * For example, how does it behave in the List monad?
+   * What about Option?
+   * Describe in your own words the general meaning of replicateM.
+   */
+  def product[A, B](ma: F[A], mb: F[B]): F[(A, B)] = map2(ma, mb)((_, _))
+
+  /**
+   * Exercise 11.6 - Hard
+   *
+   * Here's an example of a function we haven't seen before.
+   * Implement the function filterM.
+   * It's a bit like filter, except that instead of a function from A => Boolean,
+   * we have an A => F[Boolean].
+   * (Replacing various ordinary functions like this
+   * with the monadic equivalent often yields interesting results.)
+   * Implement this function,
+   * and then think about what it means for various data types.
+   */
+  def filterM[A](ms: List[A])(f: A => F[Boolean]): F[List[A]] = {
+    map(sequence(ms.map(m => product(unit(m), f(m)))))(listab => listab.filter(_._2).map(_._1))
+  }
 }
 
 object Monad {
